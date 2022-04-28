@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import BaseSheet3 from 'components/BaseSheet';
+import BaseSheet3 from 'components/BaseSheet.vue';
 import { reactive } from 'vue';
 
 const gub = reactive({

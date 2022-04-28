@@ -411,8 +411,6 @@
       </q-card>
 
     </div>
-    {{localCurrentHP}}
-    {{sessionCurrentHP}}
   </q-page>
 </template>
 
@@ -811,7 +809,6 @@ input:focus + .slider {
 }
 
 input:checked + .slider:before {
-  -webkit-transform: translateX(26px);
   -ms-transform: translateX(26px);
   transform: translateX(26px);
 }

@@ -68,11 +68,6 @@ const linksList = [
     link: "/#/Sareah",
   },
   {
-    title: "Sareah Mobile",
-    icon: "smartphone",
-    link: "/#/SareahMobile",
-  },
-  {
     title: "Gub",
     icon: "search",
     link: "/#/Gub",
@@ -83,20 +78,9 @@ const linksList = [
     link: "/#/Klein",
   },
   {
-    title: "Flafaffiel",
-    icon: "search",
-    link: "/#/Flafaffiel",
-  },
-  {
     title: "New Search",
     icon: "search",
     link: "/#/NewSearch",
-  },
-  {
-    title: "Three",
-    caption: "github.com/quasarframework",
-    icon: "code",
-    link: "/#/three",
   },
   {
     title: "Discord Chat Channel",

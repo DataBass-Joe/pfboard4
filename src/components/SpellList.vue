@@ -11,7 +11,8 @@
                         header-class="bg-primary text-white"
                         style="padding: 0">
 
-        <div v-for="(spellList, level) in caster.spells" v-bind:key="level"
+
+        <div v-for="(spellList, level, index) in caster.spells" v-bind:key="index"
              class="spells">
           <input type="checkbox" v-for="(index) in spellList.slots + Math.floor((castingMod - spellLevel[level]) / 4 + 1)" v-bind:key="index"/>
 

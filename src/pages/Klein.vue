@@ -23,7 +23,7 @@
 </template>
 
 <script setup>
-import BaseSheet2 from "components/BaseSheet2";
+import BaseSheet2 from "components/BaseSheet2.vue";
 import { computed, ref, reactive } from "vue";
 import { useMeta } from "quasar";
 
@@ -993,6 +993,4 @@ useMeta(metaData);
 </script>
 
 <style scoped>
-#page {
-}
 </style>

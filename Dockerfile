@@ -1,5 +1,5 @@
 # develop stage
-FROM node:12.22.1 as develop-stage
+FROM node:16.15.0 as develop-stage
 WORKDIR /app
 COPY package*.json ./
 RUN yarn global add @quasar/cli
