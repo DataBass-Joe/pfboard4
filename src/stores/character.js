@@ -13,7 +13,13 @@ const sizeTable = reactive({
   colossal: -8,
 });
 
-const character = computed(() => {
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
+}
+
+const sareah = computed(() => {
   const name = ref("Sareah");
   const solo = ref(false);
   const traits = ref([
@@ -36,12 +42,20 @@ const character = computed(() => {
 
   const heritage = ref("humanoid");
   const heritageTraits = ref([
+    "Elven Immunities",
+    "Darkvision",
     {
-      name: "Mismatched",
-      bonusType: "racialTrait",
+      name: "Elven Magic",
+      bonusType: "racial",
       bonus: {
-        initiative: 4,
-        reflex: -2,
+       spellPenetrationCasterLevel: 2,
+      },
+    },
+    {
+      name: "Fleet-Footed",
+      bonusType: "racial",
+      bonus: {
+        initiative: 2,
       },
     },
   ]);
@@ -104,14 +118,25 @@ const character = computed(() => {
         constitution: 6,
       },
     },
-    "Cloak of Resistance +5": {
+    "Robe of the Archmagi": {
       bonusType: "resistance",
-      cost: 25000,
+      cost: 88500,
       bonus: {
         saves: 5,
+        spellPenetrationCasterLevel: 3,
+        spellResistance: 19,
+
       },
     },
-    "Mythril Buckler +5": {
+    "Robe of the Archmagi armor": {
+      bonusType: "armor",
+      cost: 88500,
+      bonus: {
+        ac: 5,
+        ffAC: 5,
+      },
+    },
+    "Mythril Caster's Shield +5": {
       bonusType: "shield",
       cost: 26000,
       bonus: {
@@ -119,13 +144,13 @@ const character = computed(() => {
         ffAC: 6,
       },
     },
-    "Ring of Protection +1": {
+    "Ring of Protection +5": {
       bonusType: "deflection",
       cost: 2000,
       bonus: {
-        ac: 1,
-        ffAC: 1,
-        touchAC: 1,
+        ac: 5,
+        ffAC: 5,
+        touchAC: 5,
       },
     },
     "Cracked Dusty Rose Prism Ioun Stone": {
@@ -143,7 +168,7 @@ const character = computed(() => {
     },
   });
 
-  const charLevel = ref(13);
+  const charLevel = ref(14);
 
   const charClass = ref([
     {
@@ -173,7 +198,7 @@ const character = computed(() => {
         hp: 4,
         skill: 0,
         race: {
-          "half-elf": charLevel.value - 4,
+          "elf": charLevel.value - 4,
         },
       },
       saves: {
@@ -185,9 +210,13 @@ const character = computed(() => {
       casting: "spontaneous",
       castingStat: "intelligence",
       spells: {
+        "7th": {
+          slots: 3,
+          prepared: ["???"],
+        },
         "6th": {
-          slots: 4,
-          prepared: ["wither limb", "fey form II"],
+          slots: 5,
+          prepared: ["wither limb", "fey form II", "???"],
         },
         "5th": {
           slots: 6,
@@ -267,13 +296,10 @@ const character = computed(() => {
         "4th": "hallucinatory terrain",
         "5th": "mirage arcana",
         "6th": "mislead",
+        "7th": "reverse gravity",
       },
     },
   ]);
-
-  charClass.value.forEach((charClass) => {
-    charClass.casterLevel = charClass.level;
-  });
 
   const level = computed(() =>
     charClass.value.reduce(
@@ -290,7 +316,8 @@ const character = computed(() => {
   const defensiveAbilities = ref("");
   const dr = ref("");
   const resist = ref("");
-  const sr = ref("");
+  const immune = ref("sleep");
+  const sr = ref(0);
   const weaknesses = ref("");
   const saveAbilityScore = reactive({
     fortitude: "constitution",
@@ -315,7 +342,7 @@ const character = computed(() => {
       pointBuy: 14,
     },
     intelligence: {
-      pointBuy: 17,
+      pointBuy: 18,
     },
     wisdom: {
       pointBuy: 13,
@@ -325,13 +352,14 @@ const character = computed(() => {
     },
   });
   const feats = reactive({
-    "Skill Focus (Bluff)": {
+    "Deceitful": {
       bonusType: "untyped",
       bonus: {
-        bluff: 2,
+        bluff: 4,
       },
     },
-
+    "Conceal Spell": {},
+    "Improved Conceal Spell": {},
     "Accursed Hex": {},
     "Improved Initiative": {
       type: "combat",
@@ -340,10 +368,20 @@ const character = computed(() => {
         initiative: 4,
       },
     },
-    "Extra Hex (Flight)": {},
+    "Quick Draw": {},
     "Split Hex": {},
-    "spell penetration": {},
-    "greater spell penetration": {},
+    "spell penetration": {
+      bonusType: "spell penetration",
+      bonus: {
+        spellPenetrationCasterLevel: 2,
+      },
+    },
+    "greater spell penetration": {
+      bonusType: "greater spell penetration",
+      bonus: {
+        spellPenetrationCasterLevel: 2,
+      },
+    },
   });
   const skillPoints = reactive({
     acrobatics: {
@@ -521,7 +559,7 @@ const character = computed(() => {
     {
       name: "Perceive Cues",
       bonusType: "competence",
-      active: false,
+      active: true,
       duration: 1,
       bonus: {
         perception: 5,
@@ -541,23 +579,13 @@ const character = computed(() => {
       },
     },
     {
-      name: "Mage Armor",
-      bonusType: "armor",
+      name: "C-4PO's Skin (Barkskin)",
+      bonusType: "naturalArmorEnhancement",
       active: true,
       duration: 0,
       bonus: {
-        ac: 4,
-        ffAC: 4,
-      },
-    },
-    {
-      name: "C-4PO's Skin",
-      bonusType: "naturalArmorEnhancement",
-      active: false,
-      duration: 0,
-      bonus: {
-        ac: 4,
-        ffAC: 4,
+        ac: 5,
+        ffAC: 5,
       },
     },
     {
@@ -573,10 +601,12 @@ const character = computed(() => {
   ]);
 
   const charMods = reactive({
-    "half-elf": {
+    "elf": {
       bonusType: "racial",
       bonus: {
         intelligence: 2,
+        dexterity: 2,
+        constitution: -2,
       },
     },
     levelUp: {
@@ -700,6 +730,11 @@ const character = computed(() => {
 
     return holder;
   });
+
+  charClass.value.forEach((charClass) => {
+    charClass.spellPenetrationCasterLevel = charClass.level + modifiers.value.spellPenetrationCasterLevel ?? 0;
+  });
+  sr.value += modifiers.value.spellResistance ?? 0;
 
   const sizeModifier = computed(() => {
     let tempSize = sizeMod.value;
@@ -881,6 +916,8 @@ const character = computed(() => {
     };
   });
 
+
+
   // INTRODUCTION
 
   const cr = ref("");
@@ -940,7 +977,10 @@ const character = computed(() => {
 
     return hitPoints;
   });
-  // const inputDamage = ref(0);
+
+  const tempHP = computed(() => {
+    return Math.floor((getRandomInt(1,10) + getRandomInt(1,10) + level.value) * 1.5);
+  });
 
   const savingThrows = computed(() => {
     const totalSaves = {
@@ -1111,7 +1151,7 @@ const character = computed(() => {
 
   const specialAttacks = reactive([
     {
-      name: "Witch Hexes (DC 25)",
+      name: `Witch Hexes (DC ${hexDC.value})`,
       hexes: [
         "cackle",
         "misfortune",
@@ -1125,7 +1165,7 @@ const character = computed(() => {
     },
     {
       name: "Conduit Surge (1d4)",
-      usesPerDay: 1,
+      usesPerDay: 3 + abilityMods.value.charisma,
     },
   ]);
 
@@ -1146,6 +1186,7 @@ const character = computed(() => {
     defensiveAbilities,
     dr,
     resist,
+    immune,
     sr,
     weaknesses,
     saveAbilityScore,
@@ -1157,6 +1198,7 @@ const character = computed(() => {
     cr,
     xp,
     maxHP,
+    tempHP,
     ac,
     acBonuses,
     savingThrows,
@@ -1181,6 +1223,6 @@ const character = computed(() => {
 
 export const useSareah = defineStore("sareah", {
   state: () => ({
-    sareah: character.value,
+    sareah: sareah.value,
   }),
 });

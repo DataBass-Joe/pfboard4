@@ -100,9 +100,9 @@
               {{ drValue }}/{{ drType }}
             </span>
               </div>
-              <div id="immune" v-text="character.immune"></div>
+              <div v-if="character.immune" id="sr"><b>Immune</b> {{character.immune}}</div>
               <div id="resist" v-text="character.resist"></div>
-              <div id="sr" v-text="character.sr"></div>
+              <div v-if="character.sr > 0" id="sr"><b>SR</b> {{character.sr}}</div>
 
             </div>
             <div v-if="character.weaknesses" id="weaknesses">
@@ -229,6 +229,7 @@
           <b>Space </b><span id="space"> {{ character.space }} ft.; </span>
           <b>Reach </b><span id="reach"> {{ character.reach }} ft.; </span>
         </div>
+
 
         <div id="spells" v-if="showSpells" class="text-capitalize">
           <div v-for="(caster, index)
@@ -410,6 +411,8 @@
       </q-card>
 
     </div>
+    {{localCurrentHP}}
+    {{sessionCurrentHP}}
   </q-page>
 </template>
 
@@ -432,7 +435,7 @@ const toggle = reactive(props.character.toggle ?? {});
 const skillToggle = ref(true);
 const acToggle = ref(false);
 
-const damageTaken = ref(0);
+const damageTaken = ref(0 - props.character.tempHP);
 const tempDamageTaken = ref(0);
 
 const currHP = computed({
@@ -647,6 +650,21 @@ function formatSpecial(myObj, myKeys) {
   }
   return list;
 }
+
+
+
+$q.localStorage.set('localCurrHP', currHP.value)
+const localCurrentHP = $q.localStorage.getItem('localCurrHP')
+
+$q.sessionStorage.set('sessionCurrHP', currHP.value)
+const sessionCurrentHP = $q.sessionStorage.getItem('sessionCurrHP')
+
+// try {
+//   $q.localStorage.set(currHP, value)
+// } catch (e) {
+//   // data wasn't successfully saved due to
+//   // a Web Storage API error
+// }
 
 </script>
 

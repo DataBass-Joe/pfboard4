@@ -4,9 +4,7 @@
     <q-card-section>
 
       <q-expansion-item id="offense"
-                        :label="`${caster.name} Spells ${spellStyle}
-                      (CL ${caster.casterLevel};
-                       Concentration +${caster.casterLevel + castingMod});`"
+                        :label="casterLabel(caster, spellStyle, castingMod)"
                         default-opened
                         dense
                         expand-separator
@@ -88,6 +86,19 @@ import {
   api,
 } from 'boot/axios';
 
+function casterLabel(caster, spellStyle, castingMod) {
+
+  let tempLabel = `${caster.name} Spells ${spellStyle} (CL ${caster.casterLevel}`;
+
+  if (caster.hasOwnProperty('spellPenetrationCasterLevel')) {
+    tempLabel += ` [+${caster.spellPenetrationCasterLevel} against Spell Resistance]`;
+  }
+
+  tempLabel += `; Concentration +${caster.casterLevel + castingMod});`
+
+  return tempLabel;
+}
+
 const $q = useQuasar();
 const toggleKey = ref(true);
 
@@ -143,7 +154,6 @@ spellColor()
   });
 
 
-// spellList.slots + Math.floor((castingMod - spellLevel[level]) / 4 + 1)
 
 const x = computed(() => {
 
