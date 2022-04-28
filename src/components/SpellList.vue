@@ -11,10 +11,13 @@
                         header-class="bg-primary text-white"
                         style="padding: 0">
 
-
-        <div v-for="(spellList, level, index) in caster.spells" v-bind:key="index"
+        <div v-for="(spellList, level) in caster.spells" v-bind:key="level"
              class="spells">
-          <input type="checkbox" v-for="(index) in spellList.slots + Math.floor((castingMod - spellLevel[level]) / 4 + 1)" v-bind:key="index"/>
+          <span v-if="(spellList.slots + Math.floor((castingMod - spellLevel[level]) / 4 + 1)) > 0">
+            <input type="checkbox" v-for="index in
+            Array(spellList.slots + Math.floor((castingMod - spellLevel[level]) / 4 + 1))"
+                 v-bind:key="index"/>
+          </span>
 
           <div v-show="toggleKey">
             <b>
@@ -155,6 +158,10 @@ spellColor()
   });
 
 
+function spellSlotModifier(slots, level) {
+  return slots + Math.floor(((props.castingMod - spellLevel[level]) / 4) + 1)
+}
+
 
 const x = computed(() => {
 
@@ -208,8 +215,8 @@ input[type="checkbox"] {
   width: 1.15em;
   height: 1.15em;
   font-size: 2em;
-  visibility:hidden;
-  cursor:pointer;
+  visibility: hidden;
+  cursor: pointer;
 
 
 }
@@ -217,8 +224,9 @@ input[type="checkbox"] {
 input[type="checkbox"]:before {
   content: "\2606";
   position: absolute;
-  visibility:visible;
+  visibility: visible;
 }
+
 input[type="checkbox"]:checked:before {
   content: "\272E";
   position: absolute;

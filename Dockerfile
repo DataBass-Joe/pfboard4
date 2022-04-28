@@ -1,3 +1,5 @@
+RUN adduser -D myuser
+USER myuser
 # develop stage
 FROM node:16.15.0 as develop-stage
 WORKDIR /app
