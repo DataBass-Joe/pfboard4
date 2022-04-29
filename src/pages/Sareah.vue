@@ -1,7 +1,9 @@
 <template>
-  <BaseSheet4
-    :character="sareah"
-  />
+  <span>
+      <BaseSheet4
+        :character="sareah"
+      />
+  </span>
 </template>
 
 <script setup>
