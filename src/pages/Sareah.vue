@@ -10,7 +10,7 @@
 import BaseSheet4 from '/src/components/BaseSheet4.vue';
 import { useSareah } from "stores/character";
 import { useMeta } from "quasar";
-import {reactive} from "vue";
+import {reactive, ref} from "vue";
 
 const store = useSareah();
 
@@ -20,6 +20,7 @@ const metaData = reactive({
   title: sareah.name,
 });
 useMeta(metaData);
+
 
 
 </script>

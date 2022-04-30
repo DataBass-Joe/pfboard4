@@ -13,11 +13,7 @@ const sizeTable = reactive({
   colossal: -8,
 });
 
-function getRandomInt(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
-}
+
 
 const sareah = computed(() => {
   const name = ref("Sareah");
@@ -978,10 +974,6 @@ const sareah = computed(() => {
     return hitPoints;
   });
 
-  const tempHP = computed(() => {
-    return Math.floor((getRandomInt(1,10) + getRandomInt(1,10) + level.value) * 1.5);
-  });
-
   const savingThrows = computed(() => {
     const totalSaves = {
       fortitude: 0,
@@ -1179,6 +1171,7 @@ const sareah = computed(() => {
     senses,
     aura,
     speed,
+    charLevel,
     charClass,
     sizeMod,
     space,
@@ -1198,7 +1191,6 @@ const sareah = computed(() => {
     cr,
     xp,
     maxHP,
-    tempHP,
     ac,
     acBonuses,
     savingThrows,

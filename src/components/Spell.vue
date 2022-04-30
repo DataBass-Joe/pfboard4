@@ -1,5 +1,7 @@
 <template>
   <q-list class="q-ma-md text-body1">
+
+    <q-item>
     <p>
       <b>School </b>{{ spell.school }}
       <span v-if="spell.subschool">{{ `(${spell.subschool})` }}</span>
@@ -14,6 +16,7 @@
       >
       <span v-if="spell.patron"><b>Patron </b>{{ spell.patron }};</span>
     </p>
+    </q-item>
 
     <!-- CASTING -->
     <q-expansion-item
@@ -116,6 +119,7 @@
         </q-card-section>
       </q-card>
     </q-expansion-item>
+
   </q-list>
 </template>
 
@@ -131,7 +135,10 @@ defineProps({
 .q-card {
   background: transparent;
 }
-.q-card__section--vert {
+.q-card__section--vert, .q-item {
   padding: 0.25em 16px;
 }
+
+
+
 </style>

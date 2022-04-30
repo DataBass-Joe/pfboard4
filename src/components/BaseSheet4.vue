@@ -303,29 +303,6 @@
 
       </q-expansion-item>
 
-      <q-expansion-item id="toggle"
-                        style="padding: 0"
-                        expand-separator
-                        dense
-                        header-class="bg-primary text-white"
-                        label="TOGGLE">
-        <q-card-section class="text-h6">
-          <q-list class="column" id="buttons">
-            <q-item-section v-for="bonus in toggle"
-                            :key="bonus.name"
-                            class="toggle capitalize"
-                            v-bind:style="{ 'background-color' : bgColor(bonus.duration)}">
-              <q-toggle
-                v-model="bonus.active"
-                :label="bonus.name"
-                left-label
-              />
-            </q-item-section>
-          </q-list>
-
-        </q-card-section>
-      </q-expansion-item>
-
       <q-expansion-item v-if="character.featDescriptions" id="feat descriptions"
                         style="padding: 0"
                         expand-separator
@@ -403,14 +380,62 @@
       </q-expansion-item>
 
     </q-list>
-    <div id="info">
+    <q-page-sticky position="bottom-right" :offset="fabPos">
+      <q-fab
+        persistent
+        icon="add"
+        color="accent"
+        :disable="draggingFab"
+        v-touch-pan.prevent.mouse="moveFab"
+        direction="up"
+      >
+        <q-fab-action @click="buffDialog = true" color="primary" hide-icon label="Toggles"
+                      :disable="draggingFab" />
+        <q-fab-action @click="tempHP()" color="primary" hide-icon label="EGFL"
+                      :disable="draggingFab" />
+      </q-fab>
+    </q-page-sticky>
 
-      <q-card v-if="spellRef" style="background: rgba(0,0,0,50%)">
-        <q-card-section class="text-h4">{{ spellRef.name }}</q-card-section>
-        <Spell :spell="spellRef"/>
+    <q-dialog v-model="buffDialog">
+      <q-card class="parchment">
+        <q-toolbar class="bg-primary text-white">
+
+          <q-toolbar-title>Toggle Menu</q-toolbar-title>
+
+          <q-btn flat round dense icon="close" v-close-popup />
+        </q-toolbar>
+        <q-list separator>
+
+          <q-item clickable v-ripple
+                  v-for="bonus in toggle"
+                  :key="bonus.name"
+          >
+            <q-item-section>
+              <q-toggle
+                class="text-h5"
+                v-model="bonus.active"
+                :label="bonus.name"
+                dark
+                left-label
+              />
+            </q-item-section>
+          </q-item>
+
+        </q-list>
       </q-card>
+    </q-dialog>
 
-    </div>
+    <q-dialog v-model="spellDialog">
+      <div class="parchment">
+        <q-toolbar class="bg-primary text-white">
+          <q-toolbar-title>{{ spellRef.name }}</q-toolbar-title>
+          <q-btn flat round dense icon="close" v-close-popup />
+        </q-toolbar>
+        <Spell :spell="spellRef"/>
+      </div>
+    </q-dialog>
+
+
   </q-page>
 </template>
 
@@ -433,7 +458,7 @@ const toggle = reactive(props.character.toggle ?? {});
 const skillToggle = ref(true);
 const acToggle = ref(false);
 
-const damageTaken = ref(0 - props.character.tempHP);
+const damageTaken = ref(0);
 const tempDamageTaken = ref(0);
 
 const currHP = computed({
@@ -539,10 +564,6 @@ function formatArray(myArray) {
   return list;
 }
 
-// function closeInfo() {
-//   spellName = '';
-// }
-
 const spellRef = ref(null);
 
 function loadSpell(value) {
@@ -558,31 +579,12 @@ function loadSpell(value) {
         icon: 'report_problem',
       });
     });
+
+  if (spellRef.value.name === null || spellRef.value.name === undefined) {
+    spellRef.value = null;
+  }
 }
 
-//
-// function changeInfo(value) {
-//   abilityName.value = value;
-// }
-
-function bgColor(duration) {
-  let color;
-
-  if (duration === 0) {
-    color = 'rgba(0,0,0,.25)';
-  }
-  if (duration === 1) {
-    color = 'rgba(255,0,0,.25)';
-  }
-  if (duration === 2) {
-    color = 'rgba(0,0,255,.25)';
-  }
-
-  return color;
-}
-
-// const myColor = computed(() => (currHP.value >= 0 ? 'blue' : 'red'));
-// const myTrackColor = computed(() => `${myColor.value}-3`);
 function formatSpecial(myObj, myKeys) {
   let list = '';
 
@@ -650,19 +652,46 @@ function formatSpecial(myObj, myKeys) {
 }
 
 
+const fabPos = ref([ 18, 18 ])
+const draggingFab = ref(false)
+function onClick () {
+  console.log('Clicked on a fab action');
+}
+function moveFab (ev) {
+  draggingFab.value = ev.isFirst !== true && ev.isFinal !== true
 
-$q.localStorage.set('localCurrHP', currHP.value)
-const localCurrentHP = $q.localStorage.getItem('localCurrHP')
+  fabPos.value = [
+    fabPos.value[ 0 ] - ev.delta.x
+    , fabPos.value[ 1 ] - ev.delta.y
+  ]
 
-$q.sessionStorage.set('sessionCurrHP', currHP.value)
-const sessionCurrentHP = $q.sessionStorage.getItem('sessionCurrHP')
+  if (ev.isFinal) {
+    fabPos.value = [
+      18, fabPos.value[1]
+    ]
+  }
 
-// try {
-//   $q.localStorage.set(currHP, value)
-// } catch (e) {
-//   // data wasn't successfully saved due to
-//   // a Web Storage API error
-// }
+}
+
+
+const spellDialog = computed({
+  get: () => spellRef.value !== null,
+  set: () => {
+    spellRef.value = null;
+  },
+});
+const buffDialog = ref(false);
+
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
+}
+
+function tempHP() {
+  damageTaken.value -= Math.floor((getRandomInt(1,10) + getRandomInt(1,10) + props.character.charLevel) * 1.5);
+}
+
 
 </script>
 
@@ -844,6 +873,12 @@ input:checked + .slider:before {
   background-color: rgba(255, 255, 255, 0.50);
   max-height: 7.5vm;
   margin: 1em 0;
+}
+.parchment {
+  box-shadow: 2px 3px 20px black, 0 0 125px #8f5922 inset;
+  /* v2.1 : borders effect with SVG : try to play with scale to change them */
+  /* v2.2 : Noise added for a vellum paper effect */
+  background: #fffef0 url(data:image/png;base64,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);
 }
 
 </style>
