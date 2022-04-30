@@ -380,19 +380,45 @@
       </q-expansion-item>
 
     </q-list>
-    <q-page-sticky position="bottom-right" :offset="fabPos">
+
+    <q-page-sticky
+      :class="animatable ? 'fabDrag' : ''"
+      position="bottom-right"
+      :offset="fabPos"
+    >
       <q-fab
         persistent
         icon="add"
         color="accent"
-        :disable="draggingFab"
+        v-model="fabModel"
         v-touch-pan.prevent.mouse="moveFab"
         direction="up"
       >
-        <q-fab-action @click="buffDialog = true" color="primary" hide-icon label="Toggles"
-                      :disable="draggingFab" />
-        <q-fab-action @click="tempHP()" color="primary" hide-icon label="EGFL"
-                      :disable="draggingFab" />
+        <q-fab-action @click="buffDialog = true, fabModel = true" color="primary" label="Toggles"/>
+        <q-fab-action @click="tempHP(), fabModel = true" color="primary" label="EGFL"/>
+        <q-fab
+          persistent
+          color="primary"
+          icon="keyboard_arrow_up"
+          v-model="fabToggleModel"
+          v-touch-pan.prevent.mouse="moveFab"
+          direction="up"
+          external-label
+          label="Toggles"
+          label-position="left"
+
+        >
+        <q-fab-action clickable v-ripple
+                      external-label
+                      label-position="left"
+                      v-for="bonus in toggle"
+                      :key="bonus.name"
+                      :label="bonus.name"
+                      @click="bonus.active = !bonus.active, fabToggleModel = true"
+                      color="secondary"
+                      :style="bonus.active ? 'opacity:1.0' : 'opacity:0.6'"
+        />
+        </q-fab>
       </q-fab>
     </q-page-sticky>
 
@@ -424,7 +450,6 @@
         </q-list>
       </q-card>
     </q-dialog>
-
     <q-dialog v-model="spellDialog">
       <div class="parchment">
         <q-toolbar class="bg-primary text-white">
@@ -434,7 +459,6 @@
         <Spell :spell="spellRef"/>
       </div>
     </q-dialog>
-
 
   </q-page>
 </template>
@@ -652,7 +676,13 @@ function formatSpecial(myObj, myKeys) {
 }
 
 
-const fabPos = ref([ 18, 18 ])
+const animatable = ref(false);
+
+const fabModel = ref(true);
+const fabToggleModel = ref(false);
+
+
+const fabPos = ref([ 18, 18])
 const draggingFab = ref(false)
 function onClick () {
   console.log('Clicked on a fab action');
@@ -660,17 +690,31 @@ function onClick () {
 function moveFab (ev) {
   draggingFab.value = ev.isFirst !== true && ev.isFinal !== true
 
+  if (!ev.isFinal) {
+    animatable.value = false
+  }
+
   fabPos.value = [
     fabPos.value[ 0 ] - ev.delta.x
     , fabPos.value[ 1 ] - ev.delta.y
   ]
 
   if (ev.isFinal) {
+    animatable.value = true
     fabPos.value = [
       18, fabPos.value[1]
     ]
-  }
 
+    if (fabPos.value[1] < 0) {
+      fabPos.value[1] = 18
+    }
+
+    if (fabPos.value[1] > $q.screen.height - 118) {
+      fabPos.value[1] = ($q.screen.height - 118)
+      fabModel.value = false
+
+    }
+  }
 }
 
 
@@ -689,8 +733,9 @@ function getRandomInt(min, max) {
 }
 
 function tempHP() {
-  damageTaken.value -= Math.floor((getRandomInt(1,10) + getRandomInt(1,10) + props.character.charLevel) * 1.5);
+  damageTaken.value = - Math.floor((getRandomInt(1,10) + getRandomInt(1,10) + props.character.charLevel) * 1.5);
 }
+tempHP()
 
 
 </script>
@@ -881,4 +926,31 @@ input:checked + .slider:before {
   background: #fffef0 url(data:image/png;base64,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);
 }
 
+.fabDrag {
+  transition: 0.3s ease;
+}
+
+
+</style>
+
+<style lang="sass" scoped>
+.example-fab-animate,
+.q-page-sticky:hover .example-fab-animate--hover
+  animation: example-fab-animate 0.82s cubic-bezier(.36,.07,.19,.97) both
+  transform: translate3d(0, 0, 0)
+  backface-visibility: hidden
+  perspective: 1000px
+
+@keyframes example-fab-animate
+  10%, 90%
+    transform: translate3d(-1px, 0, 0)
+
+  20%, 80%
+    transform: translate3d(2px, 0, 0)
+
+  30%, 50%, 70%
+    transform: translate3d(-4px, 0, 0)
+
+  40%, 60%
+    transform: translate3d(4px, 0, 0)
 </style>

@@ -208,11 +208,11 @@ const sareah = computed(() => {
       spells: {
         "7th": {
           slots: 3,
-          prepared: ["???"],
+          prepared: ["plane shift"],
         },
         "6th": {
           slots: 5,
-          prepared: ["wither limb", "fey form II", "???"],
+          prepared: ["wither limb", "fey form II", "dispel magic, greater"],
         },
         "5th": {
           slots: 6,
