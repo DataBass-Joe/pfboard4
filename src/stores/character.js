@@ -57,7 +57,7 @@ const sareah = computed(() => {
   ]);
   const type = ref("humanoid");
   const subtype = ref(["human"]);
-  const senses = ref(["arcane sight", "darkvision 60 ft.", "see invisibility"]);
+  const senses = ref(["arcane sight", "darkvision 60 ft.", "see invisibility", "mindsight"]);
   const aura = ref("");
   const speed = ref(30);
 
@@ -119,7 +119,8 @@ const sareah = computed(() => {
       cost: 88500,
       bonus: {
         saves: 5,
-        spellPenetrationCasterLevel: 3,
+        spellPenetrationCasterLevel: 2,
+        casterLevel:1,
         spellResistance: 19,
 
       },
@@ -160,6 +161,12 @@ const sareah = computed(() => {
       bonusType: "circumstance",
       bonus: {
         bluff: 2,
+      },
+    },
+    "Blouse, Cackling Hag’s": {
+      bonusType: "competence",
+      bonus: {
+        intimidate: 2,
       },
     },
   });
@@ -728,7 +735,10 @@ const sareah = computed(() => {
   });
 
   charClass.value.forEach((charClass) => {
-    charClass.spellPenetrationCasterLevel = charClass.level + modifiers.value.spellPenetrationCasterLevel ?? 0;
+    charClass.casterLevel += modifiers.value.casterLevel ?? 0;
+    charClass.spellPenetrationCasterLevel = charClass.level
+      + (modifiers.value.casterLevel ?? 0)
+      + (modifiers.value.spellPenetrationCasterLevel ?? 0);
   });
   sr.value += modifiers.value.spellResistance ?? 0;
 
@@ -1113,11 +1123,56 @@ const sareah = computed(() => {
 
   const featDescriptions = ref([
     {
-      name: "Luck of Heroes",
+      name: "Robe of the Archmagi",
       type: "",
-      header: "Luck of Heroes",
+      header: "Robe of the Archmagi",
       description: [
-        "Whenever you spend a hero point to reroll a die roll or to grant yourself a bonus before a die roll is made, there is a chance that the hero point is not spent. Whenever you spend a hero point, roll a d20. If the result is greater than 15, the hero point is not spent. You cannot use this Feat when you use the cheat death Hero Point option.",
+        "+5 armor bonus to AC",
+        "Spell resistance 19 (see Archmage's Vestments)",
+        "+5 resistance bonus on all saving throws",
+        "+2 enhancement bonus on caster level checks made to overcome spell resistance"
+      ],
+    },
+    {
+      name: "Mithral Caster's Shield +5",
+      type: "",
+      header: "Mithral Caster's Shield +5",
+      description: [
+        "This +5 Mithral light shield has a leather strip on the back on which a spellcaster can scribe a single spell as on a scroll. A spell so scribed requires half the normal cost in raw materials.",
+        "The strip cannot accommodate spells of higher than 5th level. The strip is reusable.",
+        "The shield is used each morning to cast an Empowered Greater False Life (EGFL) on Sareah"
+      ],
+    },
+    {
+      name: "Archmage's Vestments",
+      type: "",
+      header: "Archmage's Vestments",
+      description: [
+        "Consisting of everything a truly legendary wizard might need to overcome his rivals, the Archmage’s Vestments enhance the wearer’s spellcasting abilities.",
+        "Two-Item Benefit: While you are wearing or wielding at least two pieces of this set, your caster level for all arcane spellcasting classes you have levels in increases by 1.",
+        "Three-Item Benefit: While you are wearing or wielding at least three pieces of this set, you gain one additional 3rd-level spell slot for one arcane spellcasting class you have levels in.",
+        "Four-Item Benefit: While you are wearing or wielding at least four pieces of this set, you gain one additional 4th-level spell slot for one arcane spellcasting class you have levels in.",
+        "NOT YET AVAILABLE (Five-Item Benefit: While you are wearing and wielding all five pieces of this set, you gain one additional 5th-level spell slot for one arcane spellcasting class you have levels in.)"
+      ],
+    },
+    {
+      name: "Ring of Evasion",
+      type: "",
+      header: "Ring of Evasion",
+      description: [
+        "This ring continually grants the wearer the ability to avoid damage as if she had evasion. Whenever she makes a Reflex saving throw to determine whether she takes half damage, a successful save results in no damage."
+      ],
+    },
+    {
+      name: "Circlet of Mindsight",
+      type: "",
+      header: "Circlet of Mindsight",
+      description: [
+        "This elaborate circlet of gold-and-platinum filigree bears tiny gems in settings that look disturbingly like human eyes.",
+        "When worn, the circlet lets the wearer sense the presence of other thinking creatures in her immediate area",
+        "The wearer gains the benefits of blindsense 30 feet, but only against creatures with an Intelligence score that are susceptible to mind-affecting effects.",
+        "Undead, constructs, and mindless creatures like most oozes and vermin cannot be perceived when using the circlet, nor can creatures under the effects of mind blank or a ring of mind shielding.",
+        "The circlet does not interfere with the wearer’s ability to see normally. If the wearer has blindsense or blindsight, he is able to differentiate creatures detected with those senses from creatures detected with the circlet of mindsight."
       ],
     },
   ]);
@@ -1130,15 +1185,108 @@ const sareah = computed(() => {
 
   const specialAbilities = ref([
     {
-      name: "Defensive Roll",
-      type: "Ex",
-      header: "Defensive Roll (Ex)",
+      name: "Cackling Hag’s Blouse",
+      type: "",
+      header: "Cackling Hag’s Blouse",
       description: [
-        "With this advanced talent, the rogue can roll with a potentially lethal blow to take less damage from it than she otherwise would.",
-        "Once per day, when she would be reduced to 0 or fewer hit points by damage in combat (from a weapon or other blow, not a spell or special ability), the rogue can attempt to roll with the damage. To use this ability, the rogue must attempt a Reflex saving throw (DC = damage dealt). If the save succeeds, she takes only half damage from the blow; if it fails, she takes full damage.",
-        "She must be aware of the attack and able to react to it in order to execute her defensive roll—if she is denied her Dexterity bonus to AC, she can’t use this ability. Since this effect would not normally allow a character to make a Reflex save for half damage, the rogue’s evasion ability does not apply to the defensive roll.",
+        "This loose-fitting blouse is adorned with grotesque fetishes and trophies, granting the wearer a +2 competence bonus on Intimidate checks.",
+        "If the wearer is a witch, she gains the cackle hex. If the wearer already has the cackle hex, twice per day she can use her cackle ability as a swift action instead of a move action."
+        ],
+    },
+    {
+      name: "Metamagic Rod, Quicken",
+      type: "",
+      header: "Metamagic Rod, Quicken",
+      description: [
+        "The wielder can cast up to three spells (up to 6th level) per day that are quickened as though using the Quicken Spell feat."
       ],
     },
+    {
+      name: "Lesser Metamagic Rod, Quicken",
+      type: "",
+      header: "Lesser Metamagic Rod, Quicken",
+      description: [
+        "The wielder can cast up to three spells (up to 3rd level) per day that are quickened as though using the Quicken Spell feat."
+      ],
+    },
+    {
+      name: "Rod of Grasping Hexes",
+      type: "",
+      header: "Rod of Grasping Hexes",
+      description: [
+        "This rod is crafted from a gnarled branch covered in sharp thorns.",
+        "Three times per day when a wielder of this rod uses a hex (but not an advanced hex or grand hex), she can use this rod’s power to double the range of the hex, so long as the hex has a range measured in feet."
+      ],
+    },
+    {
+      name: "Rod of Abrupt Hexes",
+      type: "",
+      header: "Rod of Abrupt Hexes",
+      description: [
+        "This rod is crafted from a gnarled branch covered in sharp thorns.",
+        "Three times per day when a wielder of this rod uses a hex (but not an advanced hex or grand hex), she can use this rod’s power to activate the hex as swift action rather than a standard action.",
+      ],
+    },
+    {
+      name: "Metamagic Rod, Empower",
+      type: "",
+      header: "Metamagic Rod, Empower",
+      description: [
+        "The wielder can cast up to three spells (up to 6th level) per day that are empowered as though using the Empower Spell feat.",
+        "One of these charges are use with the Caster's shield each morning to cast an Empowered Greater False Life (EGFL) on Sareah"
+      ],
+    },
+    {
+      name: "Ring of Counterspells",
+      type: "",
+      header: "Ring of Counterspells",
+      description: [
+        "Upon first examination, this ring seems to be a ring of spell storing. However, while it allows a single spell of 1st through 6th level to be cast into it, that spell cannot be cast out of the ring again.",
+        "Instead, should that spell ever be cast upon the wearer, the spell is immediately countered, as a counterspell action, requiring no action (or even knowledge) on the wearer’s part.",
+        "Once so used, the spell cast within the ring is gone. A new spell (or the same one as before) may be placed into it again.",
+      ],
+    },
+    {
+      name: "Conduit Surge",
+      type: "",
+      header: `Conduit Surge (Su) (${3 + abilityMods.value.charisma}/day)`,
+      description: [
+        "A ley line guardian is adept at channeling energy from ley lines to enhance her own spells.",
+        "As a swift action, she can increase her effective caster level for the next spell she casts in that round by 1d4 levels.",
+        "After performing a conduit surge, the ley line guardian must succeed at a Fortitude save (DC = 10 + level of spell cast + number of additional caster levels granted) or become staggered for a number of minutes equal to the level of the spell cast.",
+        "She can use this ability a number of times per day equal to 3 + her Charisma modifier.",
+      ],
+    },
+    {
+      name: "Cackle",
+      type: "Su",
+      header: "Cackle (Su)",
+      description: [
+        "A witch can cackle madly as a move action.",
+        "Any creature that is within 30 feet that is under the effects of an agony hex, charm hex, evil eye hex, fortune hex, or misfortune hex caused by the witch has the duration of that hex extended by 1 round."
+      ],
+    },
+    {
+      name: "Misfortune",
+      type: "",
+      header: "Misfortune (Su)",
+      description: [
+        "The witch can cause a creature within 30 feet to suffer grave misfortune for 1 round.",
+        "Anytime the creature makes an ability check, attack roll, saving throw, or skill check, it must roll twice and take the worse result. A Will save negates this hex.",
+        " At 8th level and 16th level, the duration of this hex is extended by 1 round.",
+        "This hex affects all rolls the target must make while it lasts.",
+        "Whether or not the save is successful, a creature cannot be the target of this hex again for 1 day."
+      ],
+    },
+    // {
+    //   name: "Cackling",
+    //   type: "",
+    //   header: "Cackling",
+    //   description: [
+    //     ""
+    //   ],
+    // },
+
   ]);
 
   const specialAttacks = reactive([
@@ -1153,6 +1301,7 @@ const sareah = computed(() => {
         "gift of consumption",
         "retribution",
         "agony",
+        "???",
       ],
     },
     {

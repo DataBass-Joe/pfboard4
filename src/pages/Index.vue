@@ -1,15 +1,35 @@
 <template>
-  <q-page class="row items-center justify-evenly">
-    <q-knob
-      show-value
-      :min="0"
-      :max="10"
-      class="text-light-blue q-ma-md"
-      v-model="myNumber"
-      size="50px"
-      :color="myColor"
-      :track-color="myTrackColor"
-    />
+  <q-page class="row items-center">
+    <a href="/#/Sareah">
+      <div class="container">
+        <div class="blur"></div>
+        <iframe src="/#/Sareah"></iframe>
+      </div>
+    </a>
+    <a href="/#/Frey">
+      <div class="container">
+        <div class="blur"></div>
+        <iframe src="/#/Frey"></iframe>
+      </div>
+    </a>
+    <a href="/#/Immogen">
+      <div class="container">
+        <div class="blur"></div>
+        <iframe src="/#/Immogen"></iframe>
+      </div>
+    </a>
+
+      <a href="/#/Gorthor">
+    <div class="container">
+      <iframe src="/#/Gorthor"/>
+    </div>
+    </a>
+<!--    <iframe src="/#/Frey"-->
+<!--            onload="var that=this;setTimeout(function() { that.style.opacity = 1 }, 500)"/>-->
+<!--    <iframe src="/#/Immogen"-->
+<!--            onload="var that=this;setTimeout(function() { that.style.opacity = 1 }, 500)"/>-->
+<!--    <iframe src="/#/Gorthor"-->
+<!--            onload="var that=this;setTimeout(function() { that.style.opacity = 1 }, 500)"/>-->
   </q-page>
 </template>
 
@@ -32,3 +52,23 @@ export default defineComponent({
 });
 
 </script>
+
+<style>
+iframe {
+  width: 100vw;
+  height: 100vh;
+  transform:scale(0.25);
+  transform-origin: 0 0;
+}
+.container {
+  width: 24vw;
+  height: 50vw;
+  overflow: hidden;
+}
+
+.container iframe {
+  z-index: 1;
+  pointer-events: none;
+}
+
+</style>

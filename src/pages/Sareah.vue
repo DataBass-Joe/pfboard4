@@ -32,7 +32,7 @@ useMeta(metaData);
   text-align: left;
   align-items: baseline;
   padding: 1vmin;
-  background: url("../assets/sareah_placeholder.png") no-repeat center center;
+  background: url("../assets/sareah.webp") no-repeat center center;
   justify-content: space-between;
   background-size: cover;
 }
