@@ -173,7 +173,7 @@ const sareah = computed(() => {
 
   const charLevel = ref(14);
 
-  const charClass = ref([
+  const charClasses = ref([
     {
       archetype: ["ley-line guardian"],
       name: "witch",
@@ -305,7 +305,7 @@ const sareah = computed(() => {
   ]);
 
   const level = computed(() =>
-    charClass.value.reduce(
+    charClasses.value.reduce(
       (accumulator, cur) =>
         cur.gestalt ?? false
           ? Math.max(accumulator, cur.level)
@@ -544,13 +544,13 @@ const sareah = computed(() => {
 
     let maxBAB = 0;
 
-    const CharClasses = ref(charClass.value);
+    const CharClasseses = ref(charClasses.value);
 
-    CharClasses.value.forEach((charClass) => {
-      if (charClass.gestalt === true) {
-        maxBAB = Math.max(Math.floor(charClass.level * charClass.bab), maxBAB);
+    CharClasseses.value.forEach((charClasses) => {
+      if (charClasses.gestalt === true) {
+        maxBAB = Math.max(Math.floor(charClasses.level * charClasses.bab), maxBAB);
       } else {
-        bab += Math.floor(charClass.level * charClass.bab);
+        bab += Math.floor(charClasses.level * charClasses.bab);
       }
     });
     bab += maxBAB;
@@ -734,9 +734,9 @@ const sareah = computed(() => {
     return holder;
   });
 
-  charClass.value.forEach((charClass) => {
-    charClass.casterLevel += modifiers.value.casterLevel ?? 0;
-    charClass.spellPenetrationCasterLevel = charClass.level
+  charClasses.value.forEach((charClasses) => {
+    charClasses.casterLevel += modifiers.value.casterLevel ?? 0;
+    charClasses.spellPenetrationCasterLevel = charClasses.level
       + (modifiers.value.casterLevel ?? 0)
       + (modifiers.value.spellPenetrationCasterLevel ?? 0);
   });
@@ -870,7 +870,7 @@ const sareah = computed(() => {
       totalSkills.stealth += (Math.log2(sizeModifier.value) + 1) * 4;
     }
 
-    const tempClassSkills = ref(charClass.value[0].classSkills);
+    const tempClassSkills = ref(charClasses.value[0].classSkills);
 
     const { knowledge } = skillPoints;
 
@@ -952,24 +952,24 @@ const sareah = computed(() => {
 
     let maxHitDie = 0;
 
-    const CharClasses = charClass.value;
+    const CharClasseses = charClasses.value;
 
-    CharClasses.forEach((charClass) => {
-      if (charClass.gestalt !== true) {
-        if (charClass.first) {
-          hitPoints += charClass.hitDie;
+    CharClasseses.forEach((charClasses) => {
+      if (charClasses.gestalt !== true) {
+        if (charClasses.first) {
+          hitPoints += charClasses.hitDie;
           hitPoints +=
-            (charClass.level - 1) * Math.ceil((charClass.hitDie + 1) / 2);
+            (charClasses.level - 1) * Math.ceil((charClasses.hitDie + 1) / 2);
         } else {
-          hitPoints += charClass.level * Math.ceil((charClass.hitDie + 1) / 2);
+          hitPoints += charClasses.level * Math.ceil((charClasses.hitDie + 1) / 2);
         }
-        if (typeof charClass.favored !== "undefined") {
-          if (typeof charClass.favored.hp !== "undefined") {
-            hitPoints += charClass.favored.hp;
+        if (typeof charClasses.favored !== "undefined") {
+          if (typeof charClasses.favored.hp !== "undefined") {
+            hitPoints += charClasses.favored.hp;
           }
         }
       } else {
-        maxHitDie = Math.max(charClass.hitDie, maxHitDie);
+        maxHitDie = Math.max(charClasses.hitDie, maxHitDie);
       }
     });
 
@@ -997,7 +997,7 @@ const sareah = computed(() => {
 
     const saveKeys = Object.keys(saveAbilityScore);
 
-    const charClasses = ref(charClass.value);
+    const charClasseses = ref(charClasses.value);
 
     const maxCharSaves = {
       fortitude: false,
@@ -1006,8 +1006,8 @@ const sareah = computed(() => {
     };
 
     saveKeys.forEach((save) => {
-      charClasses.value.forEach((charClass) => {
-        maxCharSaves[save] = charClass.saves[save] || maxCharSaves[save];
+      charClasseses.value.forEach((charClasses) => {
+        maxCharSaves[save] = charClasses.saves[save] || maxCharSaves[save];
       });
     });
 
@@ -1321,7 +1321,7 @@ const sareah = computed(() => {
     aura,
     speed,
     charLevel,
-    charClass,
+    charClasses,
     sizeMod,
     space,
     reach,

@@ -41,6 +41,7 @@
 
 <script>
 import EssentialLink from "components/EssentialLink.vue";
+import {useQuasar} from 'quasar'
 
 const linksList = [
   {
@@ -96,6 +97,26 @@ export default defineComponent({
 
   setup() {
     const leftDrawerOpen = ref(false);
+    const $q = useQuasar()
+
+    // Requesting fullscreen mode:
+    $q.fullscreen.request()
+      .then(() => {
+        // success!
+      })
+      .catch(err => {
+        // oh, no!!!
+      })
+
+// Exiting fullscreen mode:
+    $q.fullscreen.exit()
+      .then(() => {
+        // success!
+      })
+      .catch(err => {
+        // oh, no!!!
+      })
+
 
     return {
       essentialLinks: linksList,
@@ -109,27 +130,9 @@ export default defineComponent({
 </script>
 
 <script setup>
-import {useQuasar} from 'quasar'
 
-const $q = useQuasar()
 
-// Requesting fullscreen mode:
-$q.fullscreen.request()
-  .then(() => {
-    // success!
-  })
-  .catch(err => {
-    // oh, no!!!
-  })
 
-// Exiting fullscreen mode:
-$q.fullscreen.exit()
-  .then(() => {
-    // success!
-  })
-  .catch(err => {
-    // oh, no!!!
-  })
 </script>
 
 <style>

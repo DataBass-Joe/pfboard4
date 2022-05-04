@@ -20,11 +20,11 @@
 
         <div>
           <span id="race" class="text-capitalize" v-text="character.heritage"/>
-          <span v-if="character.charClass[0].gestalt" v-text="' Gestalt'"/>
+          <span v-if="character.charClasses[0].gestalt" v-text="' Gestalt'"/>
           <span v-text="'&nbsp;'"/>
           <span id="class" class="text-capitalize">
             {{
-              formatList(character.charClass
+              formatList(character.charClasses
                 , ['archetype', 'name', 'level'])
             }}
           </span>
@@ -233,7 +233,7 @@
 
         <div id="spells" v-if="showSpells" class="text-capitalize">
           <div v-for="(caster, index)
-          in (character.charClass)"
+          in (character.charClasses)"
                :key="index">
             <SpellList v-bind:caster="caster"
                        v-bind:castingMod="character.abilityMods[caster.castingStat]"
