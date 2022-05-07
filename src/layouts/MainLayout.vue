@@ -80,6 +80,21 @@ const linksList = [
     link: "/#/Gub",
   },
   {
+    title: "Rub",
+    icon: "fa-solid fa-wand-sparkles",
+    link: "/#/Rub",
+  },
+  {
+    title: "Tub",
+    icon: "fa-solid fa-wand-sparkles",
+    link: "/#/Gub",
+  },
+  {
+    title: "Bub",
+    icon: "fa-solid fa-wand-sparkles",
+    link: "/#/Gub",
+  },
+  {
     title: "Search",
     icon: "search",
     link: "/#/NewSearch",

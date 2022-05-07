@@ -64,6 +64,19 @@
           </span>
         </i>
         </span>
+            <span v-if="typeof caster.curseSpells !== 'undefined'">
+        <i v-for="(curse, index) in caster.curseSpells" v-show="curse[level]"
+           :key="index"
+           class="curse"> :
+          <span class="spell"
+                v-bind:class="{ active: curse[level] === activeSpell }"
+                v-on:click="emit('spellSubmit', curse[level]);
+                activeSpell = curse[level];">
+            {{ curse[level] }}
+          </span>
+        </i>
+        </span>
+
           </div>
 
         </div>
@@ -189,10 +202,6 @@ const x = computed(() => {
 
 .patron {
   color: #31CCEC;
-}
-
-.mystery {
-  color: #cdaeff;
 }
 
 .spell {

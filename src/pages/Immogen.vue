@@ -159,7 +159,7 @@ const character = computed(() => {
             prepared: [
               'Heroism, Greater',
               'Foe to Friend',
-              'Persistant Image',
+              'Persistent Image',
             ],
           },
           '4th': {

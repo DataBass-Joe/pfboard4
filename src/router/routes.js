@@ -35,6 +35,21 @@ const routes = [
     children: [{ path: "", component: () => import("pages/Gub.vue") }],
   },
   {
+    path: "/Rub",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [{ path: "", component: () => import("pages/Rub.vue") }],
+  },
+  {
+    path: "/Tub",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [{ path: "", component: () => import("pages/Gub.vue") }],
+  },
+  {
+    path: "/Bub",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [{ path: "", component: () => import("pages/Gub.vue") }],
+  },
+  {
     path: "/NewSearch",
     component: () => import("layouts/MainLayout.vue"),
     children: [{ path: "", component: () => import("pages/NewSearch.vue") }],
