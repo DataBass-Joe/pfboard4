@@ -35,6 +35,11 @@ const routes = [
     children: [{ path: "", component: () => import("pages/Gub.vue") }],
   },
   {
+    path: "/NewSearch",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [{ path: "", component: () => import("pages/NewSearch.vue") }],
+  },
+  {
     path: "/Rub",
     component: () => import("layouts/MainLayout.vue"),
     children: [{ path: "", component: () => import("pages/Rub.vue") }],
@@ -42,17 +47,12 @@ const routes = [
   {
     path: "/Tub",
     component: () => import("layouts/MainLayout.vue"),
-    children: [{ path: "", component: () => import("pages/Gub.vue") }],
+    children: [{ path: "", component: () => import("pages/Tub.vue") }],
   },
   {
     path: "/Bub",
     component: () => import("layouts/MainLayout.vue"),
-    children: [{ path: "", component: () => import("pages/Gub.vue") }],
-  },
-  {
-    path: "/NewSearch",
-    component: () => import("layouts/MainLayout.vue"),
-    children: [{ path: "", component: () => import("pages/NewSearch.vue") }],
+    children: [{ path: "", component: () => import("pages/Bub.vue") }],
   },
   // Always leave this as last one,
   // but you can also remove it

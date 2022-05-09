@@ -1,25 +1,27 @@
 <template>
   <span>
       <BaseSheet5
-        :character="rub"
+        :character="tub"
       />
   </span>
 </template>
 
 <script setup>
 import BaseSheet5 from '/src/components/BaseSheet5.vue';
-import { useRub } from "stores/character";
+import { useTub } from "stores/character";
 import { useMeta } from "quasar";
 import {reactive, ref} from "vue";
 
-const store = useRub();
+const store = useTub();
 
-const rub = store.rub;
+const tub = store.tub;
 
 const metaData = reactive({
-  title: rub.name,
+  title: tub.name,
 });
 useMeta(metaData);
+
+
 
 </script>
 
@@ -30,7 +32,7 @@ useMeta(metaData);
   text-align: left;
   align-items: baseline;
   padding: 1vmin;
-  background: url("../assets/Goblin02.webp") no-repeat center center;
+  background: url("../assets/tub.webp") no-repeat center center;
   justify-content: space-between;
   background-size: cover;
 }

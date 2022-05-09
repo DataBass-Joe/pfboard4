@@ -87,12 +87,12 @@ const linksList = [
   {
     title: "Tub",
     icon: "fa-solid fa-wand-sparkles",
-    link: "/#/Gub",
+    link: "/#/Tub",
   },
   {
     title: "Bub",
     icon: "fa-solid fa-wand-sparkles",
-    link: "/#/Gub",
+    link: "/#/Bub",
   },
   {
     title: "Search",

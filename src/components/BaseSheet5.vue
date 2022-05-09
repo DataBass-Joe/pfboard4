@@ -116,6 +116,10 @@
         </div>
         <div>
           <q-item-section class="health col-shrink justify-around rounded-borders">
+            <q-btn
+              @click="tempHP()"
+              label="Rub's Channel"
+              size="sm"/>
             <div class="q-gutter row no-wrap justify-around items-center">
               <q-btn
                 @click="damageTaken = 0"
@@ -308,12 +312,14 @@
                         style="padding: 0"
                         expand-separator
                         dense
+                        default-opened
                         header-class="bg-primary text-white"
                         label="FEATS">
         <q-card-section>
           <q-expansion-item v-for="(item, index) in character.featDescriptions"
                             :key="index"
-                            style="padding: 0"
+                            style="padding: 0; color: black; text-shadow: none;"
+                            class="parchment"
                             expand-separator
                             dense
                             header-class="bg-primary text-white"
@@ -337,7 +343,8 @@
         <q-card-section>
           <q-expansion-item v-for="(item, index) in character.specialAbilities"
                             :key="index"
-                            style="padding: 0"
+                            style="padding: 0; color: black; text-shadow: none;"
+                            class="parchment"
                             expand-separator
                             dense
                             header-class="bg-primary text-white"
@@ -395,22 +402,13 @@
         v-model="fabModel"
         v-touch-pan.prevent.mouse="moveFab"
         direction="up"
-      >
+      />
+      <q-button @click="fabModel = true" color="primary" label="Rub's Channel"/>
 
-        <q-fab-action clickable v-ripple
-                      external-label
-                      label-position="left"
-                      v-for="bonus in toggle"
-                      :key="bonus.name"
-                      :label="bonus.name"
-                      @click="bonus.active = !bonus.active, fabModel = true"
-                      class="text-purple-3"
-                      :icon="bonus.active ? 'radio_button_checked' : 'radio_button_unchecked'"
-        />
-      </q-fab>
+
     </q-page-sticky>
 
-    <q-dialog v-model="buffDialog">
+    <q-dialog v-model="fabModel">
       <q-card class="parchment">
         <q-toolbar class="bg-primary text-white">
 
@@ -426,7 +424,7 @@
           >
             <q-item-section>
               <q-toggle
-                class="text-h5"
+                class="text-h7"
                 v-model="bonus.active"
                 :label="bonus.name"
                 dark
@@ -714,6 +712,26 @@ const spellDialog = computed({
   },
 });
 const buffDialog = ref(false);
+
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
+}
+
+function tempHP() {
+  let tempHPHolder = 0
+
+  let i = 0;
+  while(i <= 5) {
+    let d6 = Math.floor(getRandomInt(1,7))
+    tempHPHolder += d6;
+    console.log(d6)
+    i++;
+  }
+
+  damageTaken.value = Math.max(-36, damageTaken.value - tempHPHolder);
+}
 
 </script>
 
