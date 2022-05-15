@@ -115,6 +115,10 @@
         </div>
         <div>
           <q-item-section class="health col-shrink justify-around rounded-borders">
+            <q-btn
+              @click="tempHP()"
+              label="Empowered Greater False Life"
+              size="sm"/>
             <div class="q-gutter row no-wrap justify-around items-center">
               <q-btn
                 @click="damageTaken = 0"
@@ -733,8 +737,23 @@ function getRandomInt(min, max) {
 }
 
 function tempHP() {
-  damageTaken.value = - Math.floor((getRandomInt(1,10) + getRandomInt(1,10) + props.character.charLevel) * 1.5);
+  let tempHPHolder = 0
+
+  let i = 0;
+  while(i <= 1) {
+    let d10 = Math.floor(getRandomInt(1,11))
+    tempHPHolder += d10;
+    // console.log(d10)
+    i++;
+  }
+
+  let option = Math.floor((tempHPHolder + props.character.charClasses[0].casterLevel) * 1.5)
+
+  let maxOption = -Math.floor((20 + props.character.charClasses[0].casterLevel) * 1.5)
+
+  damageTaken.value = Math.max(damageTaken.value - option, maxOption);
 }
+
 tempHP()
 
 

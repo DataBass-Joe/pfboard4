@@ -94,16 +94,21 @@
             </div>
             <div>
 
-              <div id="defensive abilities" v-text="character.defensiveAbilities"></div>
+              <div v-if="character.defensiveAbilities" id="defensiveAbilities">
+                <b>Defensive Abilities </b>
+                <span class="text-capitalize">
+          {{ formatArray(character.defensiveAbilities) }}
+                            </span>
+              </div>
               <div id="dr" v-if="character.dr">
                 <b>DR </b>
                 <span v-for="(drValue, drType, index) in character.dr" :key="index">
               {{ drValue }}/{{ drType }}
             </span>
               </div>
-              <div v-if="character.immune" id="sr"><b>Immune</b> {{character.immune}}</div>
+              <div v-if="character.immune" id="sr"><b>Immune</b> {{ character.immune }}</div>
               <div id="resist" v-text="character.resist"></div>
-              <div v-if="character.sr > 0" id="sr"><b>SR</b> {{character.sr}}</div>
+              <div v-if="character.sr > 0" id="sr"><b>SR</b> {{ character.sr }}</div>
 
             </div>
             <div v-if="character.weaknesses" id="weaknesses">
@@ -117,8 +122,8 @@
         <div>
           <q-item-section class="health col-shrink justify-around rounded-borders">
             <q-btn
-              @click="tempHP()"
-              label="Rub's Channel"
+              @click="healSpell()"
+              label="Heal"
               size="sm"/>
             <div class="q-gutter row no-wrap justify-around items-center">
               <q-btn
@@ -141,7 +146,7 @@
                 <q-input class="health-input"
                          type="number"
                          v-model="tempDamageTaken"
-                         />
+                />
               </q-form>
               <q-btn
                 @click="damageTaken -= tempDamageTaken; tempDamageTaken = 0"
@@ -177,17 +182,22 @@
           <b>Spd</b> <span> {{ character.speed }} ft.</span>
         </div>
 
-        <div id="melee" class="text-capitalize">
+        <div id="melee">
           <b>Melee </b>
           <span v-for="(option, index) in character.melee" :key="index">
-            <span v-text="option.name"/>
+            <span class="text-capitalize" v-text="option.name"/>
             <span v-text="'&nbsp;'"/>
+
             <span v-if="option.attackCount > -1 ?? false">
               <span v-for="n in (option.attackCount + character.attackCount)" :key="n">
-                <span v-text="formatBonus(option.attack + option.attackPenalty)"/>
-                <span v-if="n !== (option.attackCount + character.attackCount)">/</span>
+                <span v-for="m in character.multiAttackCount" :key="m">
+                <span v-text="formatBonus(option.attack + option.attackPenalty - ((n-1) * 5))"/>
+                <span
+                  v-if="n !== (option.attackCount + character.attackCount) || m !== character.multiAttackCount">/</span>
+                </span>
               </span>
             </span>
+
             <span v-else v-text="formatBonus(option.attack)"/>
             <span v-if="option.damage || option.dieCount">
               <span v-text="'&nbsp;'"/>
@@ -197,14 +207,17 @@
               <span v-text="option.dieSize"/>
               <span v-text="formatBonus(option.damage)"/>
               <span v-if="option.critRange !== 20" v-text="`/${option.critRange}–20`"/>
+              <span v-if="option.critMult !== 2" v-text="`/x${option.critMult}`"/>
               <span v-text="')'"/>
+
+              <span v-if="option.critMax" v-text="` (+${option.critMult * ((option.dieCount * option.dieSize) + option.damage) + 1} Max Crit)`"/>
             </span>
           </span>
         </div>
-        <div v-if="character.ranged[0]" id="ranged" class="text-capitalize">
+        <div v-if="character.ranged[0]" id="ranged">
           <b>Ranged </b>
           <span v-for="(option, index) in character.ranged" :key="index">
-            <span v-text="option.name"/>
+            <span class="text-capitalize" v-text="option.name"/>
             <span v-text="'&nbsp;'"/>
             <span v-if="option.attack" v-text="formatBonus(option.attack)"/>
             <span v-if="option.dieCount">
@@ -215,7 +228,9 @@
               <span v-text="option.dieSize"/>
               <span v-text="formatBonus(option.damage)"/>
               <span v-if="option.critRange !== 20" v-text="`/${option.critRange}–20`"/>
+              <span v-if="option.critMult !== 2" v-text="`/x${option.critMult}`"/>
               <span v-text="')'"/>
+              <span v-if="option.critMax" v-text="` (+${option.critMult * ((option.dieCount * option.dieSize) + option.damage)} Max Crit)`"/>
             </span>
             <span v-if="index !== character.ranged.length - 1">, </span>
           </span>
@@ -358,6 +373,31 @@
         </q-card-section>
       </q-expansion-item>
 
+      <q-expansion-item v-if="character.mythicAbilities" id="special abilities"
+                        style="padding: 0;"
+                        expand-separator
+                        default-opened
+                        dense
+                        header-class="bg-yellow-8 text-white"
+                        label="MYTHIC ABILITIES">
+        <q-card-section>
+          <q-expansion-item v-for="(item, index) in character.mythicAbilities"
+                            :key="index"
+                            style="padding: 0; color: black; text-shadow: none;"
+                            class="parchment"
+                            expand-separator
+                            dense
+                            header-class="bg-yellow-8 text-black"
+                            :label="item.header">
+            <p v-for="(descItem, descIndex) in item.description" :key="descIndex">
+              <span v-text="descItem"/>
+              <br>
+              <br>
+            </p>
+          </q-expansion-item>
+        </q-card-section>
+      </q-expansion-item>
+
       <q-expansion-item v-if="character.charGear.active" id="gear"
                         style="padding: 0"
                         expand-separator
@@ -403,7 +443,6 @@
         v-touch-pan.prevent.mouse="moveFab"
         direction="up"
       />
-      <q-button @click="fabModel = true" color="primary" label="Rub's Channel"/>
 
 
     </q-page-sticky>
@@ -414,7 +453,7 @@
 
           <q-toolbar-title>Toggle Menu</q-toolbar-title>
 
-          <q-btn flat round dense icon="close" v-close-popup />
+          <q-btn flat round dense icon="close" v-close-popup/>
         </q-toolbar>
         <q-list separator>
 
@@ -440,7 +479,7 @@
       <div class="parchment">
         <q-toolbar class="bg-primary text-white">
           <q-toolbar-title>{{ spellRef.name }}</q-toolbar-title>
-          <q-btn flat round dense icon="close" v-close-popup />
+          <q-btn flat round dense icon="close" v-close-popup/>
         </q-toolbar>
         <Spell :spell="spellRef"/>
       </div>
@@ -456,8 +495,8 @@ import {
 } from 'vue';
 import SpellList from 'src/components/SpellList.vue';
 import Spell from 'src/components/Spell.vue';
-import { api } from 'boot/axios';
-import { useQuasar } from 'quasar';
+import {api} from 'boot/axios';
+import {useQuasar} from 'quasar';
 
 const $q = useQuasar();
 const props = defineProps({
@@ -669,12 +708,14 @@ const fabModel = ref(false);
 const fabToggleModel = ref(false);
 
 
-const fabPos = ref([ 18, 18])
+const fabPos = ref([18, 18])
 const draggingFab = ref(false)
-function onClick () {
+
+function onClick() {
   console.log('Clicked on a fab action');
 }
-function moveFab (ev) {
+
+function moveFab(ev) {
   draggingFab.value = ev.isFirst !== true && ev.isFinal !== true
 
   if (!ev.isFinal) {
@@ -682,8 +723,8 @@ function moveFab (ev) {
   }
 
   fabPos.value = [
-    fabPos.value[ 0 ] - ev.delta.x
-    , fabPos.value[ 1 ] - ev.delta.y
+    fabPos.value[0] - ev.delta.x
+    , fabPos.value[1] - ev.delta.y
   ]
 
   if (ev.isFinal) {
@@ -719,18 +760,8 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
 }
 
-function tempHP() {
-  let tempHPHolder = 0
-
-  let i = 0;
-  while(i <= 5) {
-    let d6 = Math.floor(getRandomInt(1,7))
-    tempHPHolder += d6;
-    console.log(d6)
-    i++;
-  }
-
-  damageTaken.value = Math.max(-36, damageTaken.value - tempHPHolder);
+function healSpell() {
+  damageTaken.value = Math.max(0, damageTaken.value - props.character.level * 10);
 }
 
 </script>
@@ -898,7 +929,7 @@ input:checked + .slider:before {
 
 .health {
   background-color: rgba(125, 125, 255, 0.5);
-  text-align:center;
+  text-align: center;
 }
 
 .plus, .minus {
@@ -914,6 +945,7 @@ input:checked + .slider:before {
   max-height: 7.5vm;
   margin: 1em 0;
 }
+
 .parchment {
   box-shadow: 2px 3px 20px black, 0 0 125px #8f5922 inset;
   background: #fffef0 url(data:image/png;base64,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);
@@ -929,7 +961,7 @@ input:checked + .slider:before {
 <style lang="sass" scoped>
 .example-fab-animate,
 .q-page-sticky:hover .example-fab-animate--hover
-  animation: example-fab-animate 0.82s cubic-bezier(.36,.07,.19,.97) both
+  animation: example-fab-animate 0.82s cubic-bezier(.36, .07, .19, .97) both
   transform: translate3d(0, 0, 0)
   backface-visibility: hidden
   perspective: 1000px

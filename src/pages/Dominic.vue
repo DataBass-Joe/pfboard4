@@ -1,25 +1,27 @@
 <template>
   <span>
       <BaseSheet5
-        :character="rub"
+        :character="dominic"
       />
   </span>
 </template>
 
 <script setup>
 import BaseSheet5 from '/src/components/BaseSheet5.vue';
-import { useRub } from "stores/character";
+import {useDominic} from "stores/character";
 import { useMeta } from "quasar";
 import {reactive, ref} from "vue";
 
-const store = useRub();
+const store = useDominic();
 
-const rub = store.rub;
+const dominic = store.dominic;
 
 const metaData = reactive({
-  title: rub.name,
+  title: dominic.name,
 });
 useMeta(metaData);
+
+
 
 </script>
 
@@ -30,27 +32,8 @@ useMeta(metaData);
   text-align: left;
   align-items: baseline;
   padding: 1vmin;
-  background: url("../assets/Goblin02.webp") no-repeat center center;
+  background: url("../assets/dominic.webp") no-repeat center center;
   justify-content: space-between;
   background-size: cover;
-}
-
-.curse {
-  color: #ff0000;
-}
-
-.mystery {
-  color: #fcffae;
-}
-
-</style>
-
-<style>
-.curse {
-  color: #ff7c7c;
-}
-
-.mystery {
-  color: #fcffae;
 }
 </style>
