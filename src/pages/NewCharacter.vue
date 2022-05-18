@@ -30,47 +30,14 @@
           :done="step > 2"
           :header-nav="true"
         >
-          <q-select
-            filled
-            name="class"
-            v-model="charClass"
-            :options="classNames"
-            label="Class *"
-          />
-          <q-select
-            filled
-            name="archetype"
-            v-model="archetype"
-            :options="archetypeNames"
-            label="Archetype *"
+          <ClassSelection
+            v-bind:char-class-prop="charClass"
+            @char-class-submit="loadCharClass"
+            @char-class-id-submit="loadCharClassId"
+            @archetype-submit="loadArchetype"
           />
 
-          <q-item class="q-pa-md">
-            <q-markup-table>
-              <thead>
-                <tr>
-                  <th
-                    v-for="(value, key, index) in classRef[charClass]"
-                    :key="index"
-                    class="text-right"
-                  >
-                    {{ key }}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr class="text-right">
-                  <td
-                    v-for="(value, key, index) in classRef[charClass]"
-                    :key="index"
-                    class="text-right"
-                  >
-                    {{ value }}
-                  </td>
-                </tr>
-              </tbody>
-            </q-markup-table>
-          </q-item>
+
         </q-step>
         <q-step
           class="q-gutter-sm"
@@ -231,13 +198,13 @@
         <template v-slot:navigation>
           <q-stepper-navigation>
             <q-btn
-              v-if="step !== 4"
+              v-if="step !== 5"
               @click="$refs.stepper.next()"
               color="primary"
               label="Continue"
             />
             <q-btn
-              v-if="step === 4"
+              v-if="step === 5"
               @click="$refs.stepper.next()"
               label="Submit"
               type="submit"
@@ -265,13 +232,29 @@
 import { api } from "boot/axios";
 import { useQuasar } from "quasar";
 import { computed, ref, reactive } from "vue";
+import ClassSelection from "src/components/ClassSelection.vue"
 
 const $q = useQuasar();
 const step = ref(1);
 
 const name = ref(null);
-const charClass = ref(null);
-const archetype = ref(null);
+
+const charClass = ref('');
+const charClassId = ref('');
+
+function loadCharClass(value) {
+  charClass.value = value
+}
+function loadCharClassId(value) {
+  charClassId.value = value
+}
+
+const archetype = ref('');
+function loadArchetype(value) {
+  archetype.value = value
+}
+
+
 const heritage = ref(null);
 
 const accept = ref(false);
@@ -358,38 +341,10 @@ const pointsSpentColor = computed(() =>
 
 const alignment = ref("op1");
 
-function loadClass() {
-  return api
-    .get("/class")
-    .then((response) => response.data)
-    .catch(() => {
-      $q.notify({
-        color: "negative",
-        position: "top",
-        message: "Loading failed",
-        icon: "report_problem",
-      });
-    });
-}
-
-const classRef = reactive({});
-loadClass().then((response) => {
-  response.forEach((row) => {
-    classRef[row.name] = row;
-  });
-});
-const classNames = computed(() => {
-  const holder = reactive([]);
-  const classList = Object.keys(classRef);
-  classList.forEach((item) => {
-    holder.push(classRef[item].name);
-  });
-  return holder;
-});
 
 function loadHeritage() {
   return api
-    .get("/heritage?select=*")
+    .get("/heritage")
     .then((response) => response.data)
     .catch(() => {
       $q.notify({
@@ -412,41 +367,6 @@ const heritageNames = computed(() => {
   const heritageList = Object.keys(heritageRef);
   heritageList.forEach((item) => {
     holder.push(heritageRef[item].name);
-  });
-  return holder;
-});
-
-const archetypeRef = reactive({});
-
-function loadArchetype() {
-  return api
-    .get("/archetype")
-    .then((response) => response.data)
-    .catch(() => {
-      $q.notify({
-        color: "negative",
-        position: "top",
-        message: "Loading failed",
-        icon: "report_problem",
-      });
-    });
-}
-
-loadArchetype().then((response) => {
-  response.forEach((row) => {
-    archetypeRef[row.name] = row;
-  });
-});
-const archetypeNames = computed(() => {
-  const holder = reactive([]);
-  const archetypeList = Object.keys(archetypeRef);
-  archetypeList.forEach((item) => {
-    if (
-      classRef[charClass.value] &&
-      archetypeRef[item].class_id === classRef[charClass.value].id
-    ) {
-      holder.push(archetypeRef[item].name);
-    }
   });
   return holder;
 });
@@ -502,7 +422,7 @@ function pushData() {
   api
     .post("/character", {
       name: name.value,
-      class: charClass.value,
+      class_id: classRef[charClass.value].id,
       strength: abilityScores.value.strength,
       dexterity: abilityScores.value.dexterity,
       constitution: abilityScores.value.constitution,
@@ -510,7 +430,7 @@ function pushData() {
       wisdom: abilityScores.value.wisdom,
       charisma: abilityScores.value.charisma,
       point_buy: pointsSpent.value,
-      heritage: heritage.value,
+      heritage_id: heritageRef[heritage.value].id,
     })
     .then((response) => {
       console.log(response);

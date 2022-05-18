@@ -147,7 +147,7 @@ const spellLevel = reactive({
 const spellStyle = computed(() => (props.caster.casting === 'spontaneous' ? 'Known' : 'Prepared'));
 
 function spellColor(value) {
-  return api.get(`/spell?limit=1&name.ilike.${value}`)
+  return api.get(`/spell?limit=1&name=ilike.${value}`)
     .then((response) => response.data)
     .catch(() => {
       $q.notify({

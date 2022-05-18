@@ -6019,27 +6019,24 @@ const jacob = computed(() => {
     {
       name: "???",
       bonusType: "racialTrait",
-      bonus: {
-      },
+      bonus: {},
     },
     {
       name: "???",
       bonusType: "trait",
-      bonus: {
-      },
+      bonus: {},
     },
   ]);
   const alignment = ref("CG");
 
   const heritage = ref("half-elf");
   const heritageTraits = ref([
-    "Darkvision",
+    "Low-Light vision",
     {
-      name: "Skilled",
+      name: "Kindred Raised",
       bonusType: "racial",
       bonus: {
-        stealth: 4,
-        ride: 4,
+        charisma: 2,
       },
     },
   ]);
@@ -6057,7 +6054,7 @@ const jacob = computed(() => {
 
   const charMelee = ref([
     {
-      name: "Longspear",
+      name: "Bladed Scarf",
       weaponGroup: "light",
       dieCount: 1,
       dieSize: 6,
@@ -6066,11 +6063,11 @@ const jacob = computed(() => {
   ]);
   const charRanged = ref([
     {
-      name: "Double-Barreled Shotgun (20 ft.)",
+      name: "Hand Crossbow",
       weaponGroup: "light",
-      dieCount: 2,
-      dieSize: 6,
-      critRange: 20,
+      dieCount: 1,
+      dieSize: 4,
+      critRange: 19,
     },
   ]);
 
@@ -6144,7 +6141,7 @@ const jacob = computed(() => {
     },
   });
 
-  const charLevel = ref(8);
+  const charLevel = ref(6);
 
   const charClasses = ref([
     {
@@ -6156,25 +6153,17 @@ const jacob = computed(() => {
       bab: 3 / 4,
       skillRanks: 2,
       classSkills: [
-        'Acrobatics',
-        'Appraise',
-        'Bluff',
-        'Climb',
-        'Craft',
-        'Diplomacy',
-        'Disguise',
-        'Escape Artist',
-        'Intimidate',
-        'Knowledge',
+        'acrobatics',
+        'influence',
+        'athletics',
+        'religion',
+        'nature',
         'Linguistics',
-        'Perception',
-        'Perform',
-        'Profession',
-        'Sense Motive',
-        'Sleight of Hand',
-        'Spellcraft',
-        'Stealth',
-        'Use Magic Device',
+        'perception',
+        'performance',
+        'finesse',
+        'spellcraft',
+        'stealth',
       ],
       favored: {
         hp: charLevel.value,
@@ -6309,146 +6298,54 @@ const jacob = computed(() => {
   const skillPoints = reactive({
     acrobatics: {
       ranks: level.value,
-      ability: "dexterity",
+      ability: 'dexterity',
     },
-    appraise: {
+    athletics: {
+      ranks: 1,
+      ability: 'strength',
+    },
+    finesse: {
       ranks: 0,
-      ability: "intelligence",
+      ability: 'dexterity',
     },
-    bluff: {
+    influence: {
       ranks: level.value,
-      ability: "charisma",
+      ability: 'charisma',
     },
-    climb: {
-      ranks: 0,
-      ability: "strength",
-    },
-    craft: {
-      ranks: 0,
-      ability: "intelligence",
-    },
-    diplomacy: {
-      ranks: level.value,
-      ability: "charisma",
-    },
-    "disable device": {
-      ranks: 0,
-      ability: "dexterity",
-    },
-    disguise: {
-      ranks: 0,
-      ability: "charisma",
-    },
-    "escape artist": {
-      ranks: 0,
-      ability: "dexterity",
-    },
-    fly: {
-      ranks: 0,
-      ability: "dexterity",
-    },
-    "handle animal": {
-      ranks: 0,
-      ability: "charisma",
-    },
-    heal: {
-      ranks: 0,
-      ability: "wisdom",
-    },
-    intimidate: {
-      ranks: 0,
-      ability: "charisma",
-    },
-    knowledge: {
-      arcana: {
-        ranks: 0,
-        ability: "intelligence",
-      },
-      dungeoneering: {
-        ranks: 0,
-        ability: "intelligence",
-      },
-      engineering: {
-        ranks: 0,
-        ability: "intelligence",
-      },
-      geography: {
-        ranks: 0,
-        ability: "intelligence",
-      },
-      history: {
-        ranks: 0,
-        ability: "intelligence",
-      },
-      local: {
-        ranks: 0,
-        ability: "intelligence",
-      },
-      nature: {
-        ranks: 0,
-        ability: "intelligence",
-      },
-      nobility: {
-        ranks: 0,
-        ability: "intelligence",
-      },
-      planes: {
-        ranks: 0,
-        ability: "intelligence",
-      },
-      religion: {
-        ranks: 0,
-        ability: "intelligence",
-      },
-    },
-    linguistics: {
-      ranks: 0,
-      ability: "intelligence",
+    nature: {
+      ranks: level.value - 3,
+      ability: 'intelligence',
     },
     perception: {
       ranks: 0,
-      ability: "wisdom",
+      ability: 'wisdom',
     },
-    perform: {
+    performance: {
       ranks: level.value,
-      ability: "charisma",
+      ability: 'charisma',
     },
-    profession: {
-      ranks: 0,
-      ability: "wisdom",
+    religion: {
+      ranks: level.value - 3,
+      ability: 'intelligence',
     },
-    ride: {
-      ranks: 1,
-      ability: "dexterity",
-    },
-    "sense motive": {
-      ranks: 0,
-      ability: "wisdom",
-    },
-    "slight of hand": {
-      ranks: 0,
-      ability: "dexterity",
+    society: {
+      ranks: level.value - 3,
+      ability: 'intelligence',
     },
     spellcraft: {
       ranks: level.value,
-      ability: "intelligence",
+      ability: 'intelligence',
     },
     stealth: {
-      ranks: level.value,
-      ability: "dexterity",
+      ranks: 0,
+      ability: 'dexterity',
     },
     survival: {
-      ranks: 0,
-      ability: "wisdom",
+      ranks: level.value,
+      ability: 'wisdom',
     },
-    swim: {
-      ranks: 0,
-      ability: "strength",
-    },
-    "use magic device": {
-      ranks: 0,
-      ability: "charisma",
-    },
+
+
   });
 
   const ecology = "";
@@ -6597,28 +6494,72 @@ const jacob = computed(() => {
   ]);
 
   const charMods = reactive({
-    goblin: {
-      bonusType: "racial",
+    "Half-Elf": {
+      bonusType: 'racial',
       bonus: {
-        strength: -2,
-        dexterity: 4,
-        charisma: -2,
+        dexterity: 2,
       },
     },
-    bardicKnowledge: {
-      bonusType: 'untyped',
+    abpWeapon: {
+      bonusType: 'enhancement',
       bonus: {
-        knowledge: level.value + 5,
+        attackRolls: 1,
+        weaponDamage: 1,
+      },
+    },
+    abpAbilityScores: {
+      bonusType: 'enhancement',
+      bonus: {
+        strength: 0,
+        dexterity: 2,
+        constitution: 0,
+        intelligence: 0,
+        wisdom: 0,
+        charisma: 2,
+      },
+    },
+    abpResistance: {
+      bonusType: 'resistance',
+      bonus: {
+        saves: 2,
+      },
+    },
+    abpNaturalArmor: {
+      bonusType: 'naturalArmorEnhancement',
+      bonus: {
+        ac: 1,
+        ffAC: 1,
+      },
+    },
+    abpDeflection: {
+      bonusType: 'deflection',
+      bonus: {
+        ac: 1,
+        ffAC: 1,
+        touchAC: 1,
+      },
+    },
+    abpShield: {
+      bonusType: 'shieldEnhancement',
+      bonus: {
+        ac: 0,
+        ffAC: 0,
+
+      },
+    },
+    abpArmor: {
+      bonusType: 'armorEnhancement',
+      bonus: {
+        ac: 1,
+        ffAC: 1,
       },
     },
     levelUp: {
-      bonusType: "",
+      bonusType: 'inherent',
       bonus: {
-        charisma: 1,
-        dexterity: 1,
+        constitution: 1,
       },
     },
-
   });
 
   const acBonuses = computed(() => acBonusesCalc(toggle, charMods, charGear, feats, traits, heritageTraits));
@@ -6649,7 +6590,57 @@ const jacob = computed(() => {
   const cmb = computed(() => cmbCalc(abilityMods, baseAtk, sizeModifier, modifiers));
   const cmd = computed(() => cmdCalc(abilityMods, baseAtk, sizeModifier, modifiers, acBonuses));
 
-  const skills = computed(() => skillsCalc(abilityMods, sizeModifier, modifiers, skillPoints, charClasses));
+  const skills = computed(() => {
+    const skillRanks = skillPoints;
+
+    const totalSkills = {
+      acrobatics: 0,
+      athletics: 0,
+      finesse: 0,
+      influence: 0,
+      nature: 0,
+      perception: 0,
+      performance: 0,
+      religion: 0,
+      society: 0,
+      spellcraft: 0,
+      stealth: 0,
+      survival: 0,
+    };
+
+    if (sizeModifier.value !== 0) {
+      totalSkills.acrobatics += (Math.log2(sizeModifier.value) + 1) * 2;
+      totalSkills.stealth += (Math.log2(sizeModifier.value) + 1) * 4;
+    }
+
+    const tempClassSkills = ref(charClasses.value[0].classSkills);
+
+    const keys = Object.keys(totalSkills);
+
+    const summarySkills = {};
+
+    keys.forEach((skillKey) => {
+      tempClassSkills.value.forEach((classSkill) => {
+        if (classSkill === skillKey && skillRanks[skillKey].ranks >= 1) totalSkills[skillKey] += 3;
+      });
+
+      console.log(skillKey)
+
+      totalSkills[skillKey] += skillRanks[skillKey].ranks;
+      totalSkills[skillKey] += abilityMods.value[skillRanks[skillKey].ability];
+      totalSkills[skillKey] += modifiers.value[skillKey] ?? 0;
+      totalSkills[skillKey] += modifiers.value.skills ?? 0;
+
+      if (skillRanks[skillKey].ranks >= 1) {
+        summarySkills[skillKey] = totalSkills[skillKey];
+      }
+    });
+
+    return {
+      totalSkills,
+      summarySkills,
+    };
+  });
 
 
   // INTRODUCTION
@@ -6840,3 +6831,5 @@ export const usejacob = defineStore("jacob", {
     jacob: jacob.value,
   }),
 });
+
+

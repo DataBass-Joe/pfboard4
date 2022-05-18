@@ -100,6 +100,16 @@ const linksList = [
     link: "/#/Bub",
   },
   {
+    title: "JacoBard",
+    icon: "fa-solid fa-wand-sparkles",
+    link: "/#/JacoBard",
+  },
+  {
+    title: "Immogen4",
+    icon: "fa-solid fa-wand-sparkles",
+    link: "/#/Immogen4",
+  },
+  {
     title: "Search",
     icon: "search",
     link: "/#/NewSearch",

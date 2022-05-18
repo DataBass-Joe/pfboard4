@@ -59,6 +59,16 @@ const routes = [
     component: () => import("layouts/MainLayout.vue"),
     children: [{ path: "", component: () => import("pages/Dominic.vue") }],
   },
+  {
+    path: "/JacoBard",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [{ path: "", component: () => import("pages/JacoBard.vue") }],
+  },
+  {
+    path: "/Immogen4",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [{ path: "", component: () => import("pages/Immogen4.vue") }],
+  },
   // Always leave this as last one,
   // but you can also remove it
   {

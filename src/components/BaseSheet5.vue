@@ -207,7 +207,7 @@
               <span v-text="option.dieSize"/>
               <span v-text="formatBonus(option.damage)"/>
               <span v-if="option.critRange !== 20" v-text="`/${option.critRange}–20`"/>
-              <span v-if="option.critMult !== 2" v-text="`/x${option.critMult}`"/>
+              <span v-if="option.critMult && option.critMult !== 2" v-text="`/x${option.critMult}`"/>
               <span v-text="')'"/>
 
               <span v-if="option.critMax" v-text="` (+${option.critMult * ((option.dieCount * option.dieSize) + option.damage) + 1} Max Crit)`"/>
@@ -228,7 +228,7 @@
               <span v-text="option.dieSize"/>
               <span v-text="formatBonus(option.damage)"/>
               <span v-if="option.critRange !== 20" v-text="`/${option.critRange}–20`"/>
-              <span v-if="option.critMult !== 2" v-text="`/x${option.critMult}`"/>
+              <span v-if="option.critMult && option.critMult !== 2" v-text="`/x${option.critMult}`"/>
               <span v-text="')'"/>
               <span v-if="option.critMax" v-text="` (+${option.critMult * ((option.dieCount * option.dieSize) + option.damage)} Max Crit)`"/>
             </span>
