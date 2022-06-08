@@ -67,7 +67,12 @@ const routes = [
   {
     path: "/Immogen4",
     component: () => import("layouts/MainLayout.vue"),
-    children: [{ path: "", component: () => import("pages/Immogen4.vue") }],
+    children: [{ path: "", component: () => import("pages/SelectCharacter.vue") }],
+  },
+  {
+    path: "/Ainsel",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [{ path: "", component: () => import("pages/Ainsel.vue") }],
   },
   // Always leave this as last one,
   // but you can also remove it

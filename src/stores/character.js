@@ -246,7 +246,7 @@ function skillsCalc(abilityMods, sizeModifier, modifiers, skillPoints, charClass
     "use magic device": 0,
   };
 
-  if (sizeModifier !== 0) {
+  if (sizeModifier.value !== 0) {
     totalSkills.fly += (Math.log2(sizeModifier.value) + 1) * 2;
     totalSkills.stealth += (Math.log2(sizeModifier.value) + 1) * 4;
   }
@@ -278,6 +278,9 @@ function skillsCalc(abilityMods, sizeModifier, modifiers, skillPoints, charClass
         totalSkills.knowledge[knowledgeSkillKey] += abilityMods.value[skillRanks.knowledge[knowledgeSkillKey].ability];
         totalSkills.knowledge[knowledgeSkillKey] += modifiers.value.knowledge ?? 0;
         totalSkills.knowledge[knowledgeSkillKey] += modifiers.value.skills ?? 0;
+
+        summarySkills[skillKey] = totalSkills[skillKey];
+
       });
     } else {
       totalSkills[skillKey] += skillRanks[skillKey].ranks;
@@ -396,7 +399,7 @@ function meleeCalc(abilityMods, modifiers, charMelee, baseAtk, sizeModifier) {
     sizeModifier.value
   );
   const tempMeleeDamage = ref(
-    Math.floor(abilityMods.value.strength * (1 + 0.5 * twoHanding))
+    Math.floor(abilityMods.value.strength * (1 + (0.5 * twoHanding)))
   );
 
   const tempDexDamage = ref(Math.floor(abilityMods.value.dexterity));
@@ -453,8 +456,6 @@ function rangedCalc(abilityMods, modifiers, charRanged, baseAtk, sizeModifier) {
     abilityMods.value.strength + (modifiers.value.weaponDamage ?? 0)
   );
 
-  const dieSizeMod = ref(sizeModifier.value);
-
   const rOptions = ref([]);
 
   charRanged.value.forEach((rangedOption) => {
@@ -467,7 +468,6 @@ function rangedCalc(abilityMods, modifiers, charRanged, baseAtk, sizeModifier) {
     });
     option.value.attack += tempRangedAttack.value;
     option.value.damage += tempRangedDamage.value;
-    option.value.dieSize -= dieSizeMod.value;
     rOptions.value.push(option.value);
   });
 
@@ -4676,7 +4676,7 @@ const immogen = computed(() => {
   const heritageTraits = ref([]);
   const type = ref('humanoid');
   const subtype = ref(['human']);
-  const senses = ref(['arcane sight, darkvision 60ft., see invisibility, alignment sight']);
+  const senses = ref(['arcane sight, See in Darkness, see invisibility, alignment sight']);
   const aura = ref('');
   const speed = ref(30);
 
@@ -4710,16 +4710,22 @@ const immogen = computed(() => {
     },
   ]);
 
-  const mythicTier = ref(5);
+  const mythicTier = ref(7);
   const mythicFlag = ref(true);
   const mythicPower = ref(3 + (2 * mythicTier.value));
   const mythicPath = reactive({
     heirophant: {
       bonusType: 'mythic',
       bonus: {
-        charisma: 4,
+        charisma: 6,
         initiative: mythicTier.value,
         hp: (4 * mythicTier.value),
+      },
+    },
+    'overcome curse': {
+      bonusType: 'uncurse',
+      bonus: {
+        initiative: 4,
       },
     },
     feats: {},
@@ -4746,8 +4752,26 @@ const immogen = computed(() => {
         'disable device': 2,
       },
     },
+    'Cassock of the Black Monk': {
+      bonusType: "luck",
+      cost: 34000,
+      bonus: {
+        ac: 5,
+        touchAC: 5,
+        ffAC: 5,
+      },
+    },
+    "Robe of the Archmagi": {
+      bonusType: "resistance",
+      cost: 88500,
+      bonus: {
+        saves: 5,
+        spellPenetrationCasterLevel: 2,
+        casterLevel: 1,
+      },
+    },
   });
-  const charLevel = ref(15);
+  const charLevel = ref(16);
 
   const charClasses = ref([
     {
@@ -4795,6 +4819,13 @@ const immogen = computed(() => {
       casting: 'spontaneous',
       castingStat: 'charisma',
       spells: {
+        '6th': {
+          slots: 1,
+          prepared: [
+            'Project Image',
+            'Overwhelming Presence',
+          ],
+        },
         '5th': {
           slots: 3,
           prepared: [
@@ -4802,6 +4833,7 @@ const immogen = computed(() => {
             'Foe to Friend',
             'Persistent Image',
             'Unwilling Shield',
+            'Covetous Aura',
           ],
         },
         '4th': {
@@ -4814,12 +4846,13 @@ const immogen = computed(() => {
             'Zone of Silence',
             'Legend Lore',
             'Vigilant Rest',
+            'Break Enchantment'
           ],
         },
         '3rd': {
           slots: 5,
           prepared: [
-            'They Know',
+            'Magic Aura, Greater',
             'Glibness',
             'Major Image',
             'Deep Slumber',
@@ -4910,11 +4943,18 @@ const immogen = computed(() => {
       casting: 'spontaneous',
       castingStat: 'charisma',
       spells: {
+        '8th': {
+          slots: 3,
+          prepared: [
+            '???',
+          ],
+        },
         '7th': {
-          slots: 4,
+          slots: 5,
           prepared: [
             'Hymn of Peace',
             'Ethereal Jaunt',
+            'Bestow Curse, Greater'
           ],
         },
         '6th': {
@@ -4993,9 +5033,6 @@ const immogen = computed(() => {
             'Mending',
             'Vigor',
             'Spark',
-            '???',
-            '???',
-            '???',
           ],
         },
 
@@ -5012,7 +5049,7 @@ const immogen = computed(() => {
           '5th': 'permanency',
           '6th': 'contingency',
           '7th': 'disintegrate',
-          '8th': 'moment of prescience',
+          '8th': 'temporal stasis',
         },
       ],
       curseSpells: [{
@@ -5037,7 +5074,7 @@ const immogen = computed(() => {
 
   //DEFENSE
 
-  const defensiveAbilities = ref(['hard to kill', 'Freedom of Movement']);
+  const defensiveAbilities = ref(['hard to kill', 'Freedom of Movement, Permanent Mythic Invisibility']);
   const dr = ref("");
   const resist = ref("");
   const immune = ref("");
@@ -5077,7 +5114,7 @@ const immogen = computed(() => {
     },
     charisma: {
       pointBuy: 16,
-      levelUp: 3,
+      levelUp: 4,
     },
   });
   const feats = reactive({
@@ -5298,10 +5335,10 @@ const immogen = computed(() => {
       duration: 1,
       active: true,
       bonus: {
-        attackRolls: 5,
-        saves: 5,
-        skills: 5,
-        weaponDamage: 5,
+        attackRolls: 8,
+        saves: 8,
+        skills: 8,
+        weaponDamage: 8,
       },
     },
     {
@@ -5360,9 +5397,9 @@ const immogen = computed(() => {
       bonus: {
         strength: 2,
         dexterity: 6,
-        constitution: 2,
+        constitution: 4,
         intelligence: 2,
-        wisdom: 2,
+        wisdom: 4,
         charisma: 6,
       },
     },
@@ -5375,16 +5412,16 @@ const immogen = computed(() => {
     abpNaturalArmor: {
       bonusType: 'naturalArmorEnhancement',
       bonus: {
-        ac: 4,
-        ffAC: 4,
+        ac: 5,
+        ffAC: 5,
       },
     },
     abpDeflection: {
       bonusType: 'deflection',
       bonus: {
-        ac: 4,
-        ffAC: 4,
-        touchAC: 4,
+        ac: 5,
+        ffAC: 5,
+        touchAC: 5,
       },
     },
     abpShield: {
@@ -5504,6 +5541,7 @@ const immogen = computed(() => {
       + (modifiers.value.spellPenetrationCasterLevel ?? 0);
   });
   sr.value += modifiers.value.spellResistance ?? 0;
+  sr.value += 10 + Math.floor(charLevel.value/2) + mythicTier.value;
 
 
   const multiAttackCount = computed(() => 1 + (modifiers.value.multiAttackCount ?? 0));
@@ -5904,7 +5942,7 @@ const immogen = computed(() => {
       description: [
         'You can learn a number of mythic spells equal to your tier and can expend mythic power when casting them to enhance the results.',
         'To select a mythic spell, you must be able to cast the non-mythic version or have it on your list of spells known. Every time you gain a new tier, you can select an additional mythic spell.',
-        'Disintegrate, Deep Slumber, Invisibility, Mythic Severance, Deathless'
+        'Disintegrate, Deep Slumber, Invisibility, Mythic Severance, Deathless, Covetous Aura, Break Enchantment'
       ],
     },
     {
@@ -5942,9 +5980,21 @@ const immogen = computed(() => {
     },
 
     {
+      name: 'Overcome Curse',
+      type: 'Su',
+      header: 'Overcome Curse',
+      description: [
+        'For example, bestow curse has no effect on you, and you can handle, carry, or discard a cursed magic item without harm.',
+        'If a cursed item has useful functions and a cursed effect (such as armor of arrow attraction) or drawback (such as a mace of blood), you are immune to the cursed effect and drawback, and can still use its other abilities.',
+        'If a cursed item works normally for a period of time before its curse triggers (such as gauntlets of fumbling), the item stops working for you when the curse would normally trigger.',
+        'If you’re an oracle, you can ignore the negative effects of your oracle’s curse.'
+      ],
+    },
+
+    {
       name: 'Maximized Critical',
       type: 'Ex',
-      header: 'Maximized Critical',
+      header: 'Maximized Critical x2',
       description: [
         'Whenever you score a critical hit, the weapon’s damage result is always the maximum possible amount you could roll.',
         'This doesn’t affect other dice added to the damage, such as from sneak attack or the flaming weapon special ability.'
@@ -6001,6 +6051,7 @@ const immogen = computed(() => {
     modifiers,
     heroPointAbilities,
     mythicAbilities,
+    mythicPower,
     revelationDC,
     attackCount,
     multiAttackCount,
@@ -6012,9 +6063,10 @@ export const useImmogen = defineStore("immogen", {
   }),
 });
 
+
 const jacob = computed(() => {
   const name = ref("JacoBard");
-  const solo = ref(false);
+  const solo = ref(true);
   const traits = ref([
     {
       name: "???",
@@ -6042,11 +6094,11 @@ const jacob = computed(() => {
   ]);
   const type = ref("humanoid");
   const subtype = ref(["human", "elf"]);
-  const senses = ref(["darkvision 60 ft."]);
+  const senses = ref(["Low-Light vision 60 ft."]);
   const aura = ref("");
   const speed = ref(30);
 
-  const size = ref("small");
+  const size = ref("medium");
   const sizeMod = ref(sizeTable[size.value]);
   // TODO
   const space = ref(5);
@@ -6063,11 +6115,13 @@ const jacob = computed(() => {
   ]);
   const charRanged = ref([
     {
-      name: "Hand Crossbow",
+      name: "Longbow",
       weaponGroup: "light",
       dieCount: 1,
-      dieSize: 4,
-      critRange: 19,
+      dieSize: 8,
+      critRange: 20,
+      critMult: 3,
+      attackCount: 1,
     },
   ]);
 
@@ -6088,42 +6142,12 @@ const jacob = computed(() => {
         touchAC: 1,
       },
     },
-    "Banner of the Ancient Kings": {
-      bonusType: "circumstance",
-      cost: 4000,
-      bonus: {
-        initiative: 4,
-      },
-    },
-    "Belt of Con +2": {
-      bonusType: "enhancement",
-      cost: 4000,
-      bonus: {
-        constitution: 2,
-      },
-    },
-    "Cloak of Resistance": {
-      bonusType: "resistance",
-      cost: 9000,
-      bonus: {
-        saves: 3,
-
-      },
-    },
     "Mwk Chain Shirt": {
       bonusType: "armor",
       cost: 100,
       bonus: {
         ac: 4,
         ffAC: 4,
-      },
-    },
-    "Necklace of Natural Armor +1": {
-      bonusType: "naturalArmorEnhancement",
-      cost: 2000,
-      bonus: {
-        ac: 1,
-        ffAC: 1,
       },
     },
     "Cracked Dusty Rose Prism Ioun Stone": {
@@ -6133,19 +6157,13 @@ const jacob = computed(() => {
         initiative: 1,
       },
     },
-    "Masterwork Tools (Bluff)": {
-      bonusType: "circumstance",
-      bonus: {
-        bluff: 2,
-      },
-    },
   });
 
   const charLevel = ref(6);
 
   const charClasses = ref([
     {
-      archetype: ['songhealer'],
+      archetype: ['arrowsong'],
       name: 'bard',
       level: charLevel.value,
       first: true,
@@ -6169,7 +6187,7 @@ const jacob = computed(() => {
         hp: charLevel.value,
         skill: 0,
         race: {
-          goblin: 0,
+          "half-elf": 0,
         },
       },
       saves: {
@@ -6181,30 +6199,22 @@ const jacob = computed(() => {
       casting: 'spontaneous',
       castingStat: 'charisma',
       spells: {
-        '3rd': {
-          slots: 2,
-          prepared: [
-            'Haste',
-            'Major Image',
-            'Good Hope',
-          ],
-        },
         '2nd': {
-          slots: 4,
+          slots: 2,
           prepared: [
             'Gallant Inspiration',
             'Heroism',
             'Invisibility',
-            'Mirror Image',
+            'Hold Person',
           ],
         },
         '1st': {
-          slots: 4,
+          slots: 3,
           prepared: [
-            'Shadow Trap',
-            'Saving Finale',
+            'Charm Person',
+            'Grease',
             'Hideous Laughter',
-            'Feather Fall',
+            'Silent Image',
           ],
         },
         Cantrips: {
@@ -6255,45 +6265,37 @@ const jacob = computed(() => {
 
   const pointBuy = reactive({
     strength: {
-      pointBuy: 8,
+      pointBuy: 18,
     },
     dexterity: {
-      pointBuy: 15,
+      pointBuy: 18,
     },
     constitution: {
-      pointBuy: 10,
+      pointBuy: 11,
     },
     intelligence: {
-      pointBuy: 8,
-    },
-    wisdom: {
       pointBuy: 10,
     },
+    wisdom: {
+      pointBuy: 12,
+    },
     charisma: {
-      pointBuy: 15,
+      pointBuy: 14,
     },
   });
   const feats = reactive({
-    "Improved Initiative": {
-      type: "combat",
-      bonusType: "untyped",
-      bonus: {
-        initiative: 4,
-      },
-    },
-    "Burn It Down! (Teamwork)": {
-      bonusType: "morale",
-      bonus: {
-        weaponDamage: 3,
-      },
-    },
     "Master Performer": {},
-    "Grand Master Performer": {},
+    // "Grand Master Performer": {},
     "Lingering Performance": {},
-    "Battle Singer": {},
-    "Extra Performance": {},
-    "Goblin Gunslinger": {},
-    "Encouraging Spell": {},
+    // "Extra Performance": {},
+    "Outflank": {},
+    "Improved Outflank": {},
+    "Rapid Shot": {},
+    "Manyshot": {},
+    "Point Blank Shot": {
+      attackRolls: 1,
+      weaponDamage: 1,
+    }
   });
   const skillPoints = reactive({
     acrobatics: {
@@ -6386,12 +6388,13 @@ const jacob = computed(() => {
         reflex: 1,
         ac: 1,
         touchAC: 1,
+        attackCount: 1,
       },
     },
     {
       name: "Power Attack",
       bonusType: "",
-      active: false,
+      active: true,
       duration: 2,
       bonus: {
         attackRolls: -(Math.floor(baseAtk.value / 4) + 1),
@@ -6400,95 +6403,24 @@ const jacob = computed(() => {
       },
     },
     {
-      name: "Tub's Inspire Courage",
+      name: "Inspire Courage",
       bonusType: "competence",
       active: false,
       duration: 2,
       bonus: {
-        attackRolls: 7,
-        weaponDamage: 7,
-        saves: 4,
+        attackRolls: 4,
+        weaponDamage: 4,
       },
     },
     {
-      name: "Tub's Heroism",
+      name: "Heroism",
       bonusType: "morale",
       active: false,
       duration: 2,
       bonus: {
-        attackRolls: 3,
-        saves: 3,
-        skills: 3,
-      },
-    },
-    {
-      name: "Rub's Channeled Shield Wall",
-      bonusType: "DefelctionArmorEnhancement",
-      active: false,
-      duration: 2,
-      bonus: {
-        ac: 2,
-        touchAC: 2,
-        ffAC: 2,
-      },
-    },
-    {
-      name: "Rub's Magic Weapon",
-      bonusType: "enhancement",
-      active: false,
-      duration: 2,
-      bonus: {
         attackRolls: 2,
-        weaponDamage: 2,
-      },
-    },
-    {
-      name: "Rub's Weapon of Awe",
-      bonusType: "sacred",
-      active: false,
-      duration: 2,
-      bonus: {
-        attackRolls: 2,
-        weaponDamage: 2,
-      },
-    },
-    {
-      name: "Rub's Magic Vestment",
-      bonusType: "enhancement",
-      active: false,
-      duration: 2,
-      bonus: {
-        ac: 2,
-        ffAC: 2,
-      },
-    },
-    {
-      name: "Rub's Shield of Faith",
-      bonusType: "deflection",
-      active: false,
-      duration: 2,
-      bonus: {
-        ac: 3,
-        touchAC: 3,
-        ffAC: 3,
-      },
-    },
-    {
-      name: "Eagle's Splendor",
-      bonusType: "enhancement",
-      active: false,
-      duration: 2,
-      bonus: {
-        charisma: 4,
-      },
-    },
-    {
-      name: "Tub's Grace",
-      bonusType: "enhancement",
-      active: false,
-      duration: 2,
-      bonus: {
-        dexterity: 4,
+        saves: 2,
+        skills: 2,
       },
     },
   ]);
@@ -6510,8 +6442,8 @@ const jacob = computed(() => {
     abpAbilityScores: {
       bonusType: 'enhancement',
       bonus: {
-        strength: 0,
-        dexterity: 2,
+        strength: 2,
+        dexterity: 0,
         constitution: 0,
         intelligence: 0,
         wisdom: 0,
@@ -6581,6 +6513,17 @@ const jacob = computed(() => {
     return tempSize;
   });
 
+  const attackCount = computed(() => {
+    let tempattackCount = 3;
+
+    tempattackCount += modifiers.value.attackCount ?? 0;
+
+    // tempattackCount += Math.floor((baseAtk.value - 1) / 5) ?? 0;
+
+    return tempattackCount;
+  });
+
+
   // STATISTICS
 
   const abilityScores = computed(() => abilityScoresCalc(pointBuy, modifiers));
@@ -6624,7 +6567,617 @@ const jacob = computed(() => {
         if (classSkill === skillKey && skillRanks[skillKey].ranks >= 1) totalSkills[skillKey] += 3;
       });
 
-      console.log(skillKey)
+      totalSkills[skillKey] += skillRanks[skillKey].ranks;
+      totalSkills[skillKey] += abilityMods.value[skillRanks[skillKey].ability];
+      totalSkills[skillKey] += modifiers.value[skillKey] ?? 0;
+      totalSkills[skillKey] += modifiers.value.skills ?? 0;
+
+      if (skillRanks[skillKey].ranks >= 1) {
+        summarySkills[skillKey] = totalSkills[skillKey];
+      }
+    });
+
+    return {
+      totalSkills,
+      summarySkills,
+    };
+  });
+
+
+  // INTRODUCTION
+
+  const cr = ref("");
+  const xp = ref(null);
+  const initiative = computed(() => initiativeCalc(abilityMods, modifiers));
+
+  // DEFENSE
+
+  const ac = computed(() => acCalc(abilityMods, modifiers, sizeModifier));
+
+  const maxHP = computed(() => maxHPCalc(abilityMods, modifiers, charClasses, solo, level));
+
+  const savingThrows = computed(() => savingThrowsCalc(abilityMods, modifiers, saveAbilityScore, charClasses, level));
+
+  // OFFENSE
+
+  const melee = computed(() => meleeCalc(abilityMods, modifiers, charMelee, baseAtk, sizeModifier));
+
+  const ranged = computed(() => rangedCalc(abilityMods, modifiers, charRanged, baseAtk, sizeModifier));
+
+  const bardicPerformance = computed(() => 4 + abilityMods.value.charisma + (level.value * 2));
+
+  const specialAttacks = reactive([
+    {
+      name: `Inspire Courage (+4, ${ bardicPerformance.value }/day`,
+    },
+  ]);
+
+  const featDescriptions = ref('');
+  const heroPointAbilities = ref("");
+  const mythicAbilities = ref("");
+
+
+  const specialAbilities = ref('');
+
+  return {
+    name,
+    solo,
+    alignment,
+    heritage,
+    type,
+    subtype,
+    senses,
+    aura,
+    speed,
+    charLevel,
+    charClasses,
+    sizeMod,
+    space,
+    reach,
+    defensiveAbilities,
+    dr,
+    resist,
+    immune,
+    sr,
+    weaknesses,
+    saveAbilityScore,
+    tactics,
+    charGear,
+    ecology,
+    miscellaneous,
+    initiative,
+    cr,
+    xp,
+    maxHP,
+    ac,
+    acBonuses,
+    savingThrows,
+    melee,
+    ranged,
+    baseAtk,
+    cmb,
+    cmd,
+    skills,
+    abilityScores,
+    abilityMods,
+    featDescriptions,
+    specialAbilities,
+    toggle,
+    modifiers,
+    heroPointAbilities,
+    mythicAbilities,
+    attackCount,
+    specialAttacks,
+    bardicPerformance,
+  };
+});
+export const useJacob = defineStore("jacob", {
+  state: () => ({
+    jacob: jacob.value,
+  }),
+});
+
+const gorthor = computed(() => {
+  const name = ref("Gorthor");
+  const solo = ref(true);
+  const traits = ref([
+    {
+      name: "???",
+      bonusType: "racialTrait",
+      bonus: {},
+    },
+    {
+      name: "???",
+      bonusType: "trait",
+      bonus: {},
+    },
+  ]);
+  const alignment = ref('CG');
+
+  const heritage = ref('Dragonborn');
+  const heritageTraits = ref([
+    {
+      name: 'Armored Scales',
+      bonusType: 'naturalArmor',
+      bonus: {
+        ac: 1,
+        ffAC: 1,
+      },
+    },
+  ]);
+  const type = ref("humanoid");
+  const subtype = ref(['reptilian']);
+  const senses = ref(["darkvision 60 ft."]);
+  const aura = ref("");
+  const speed = ref(30);
+
+  const size = ref("medium");
+  const sizeMod = ref(sizeTable[size.value]);
+  // TODO
+  const space = ref(5);
+  const reach = ref(5);
+
+  const charMelee = ref([
+    {
+      name: 'Handaxe',
+      weaponGroup: 'light',
+      attackCount: 0,
+      attackPenalty: 0,
+      dieCount: 1,
+      dieSize: 6,
+      critRange: 20,
+      critMult: 3,
+    },
+    {
+      name: 'TWF Handaxe',
+      weaponGroup: 'light',
+      attackCount: 1,
+      iterativeAttackCount: 1,
+      attackPenalty: -2,
+      dieCount: 1,
+      dieSize: 6,
+      critRange: 20,
+      critMult: 3,
+    },
+  ]);
+  const charRanged = ref([
+    {
+      name: 'Shuriken',
+      weaponGroup: 'thrown',
+      attackCount: 0,
+      attackPenalty: 0,
+      dieCount: 1,
+      dieSize: 2,
+      critRange: 20,
+      critMult: 2,
+    },
+    {
+      name: 'Flurry of Stars',
+      weaponGroup: 'thrown',
+      attackCount: 2,
+      attackPenalty: -2,
+      iterativeMax : true,
+      dieCount: 1,
+      dieSize: 2,
+      critRange: 20,
+      critMult: 2,
+    },
+  ]);
+
+  const charGear = reactive({
+    'Chain Shirt': {
+      price: 100,
+      weight: 25,
+      group: 'light',
+      bonusType: 'armor',
+      bonus: {
+        ac: 4,
+        ffAC: 4,
+        acp: -2,
+        maxDex: 4,
+      },
+    },
+    'Mwk Thieves Tools': {
+      bonusType: 'circumstance',
+      bonus: {
+        'disable device': 2,
+      },
+    },
+    "Cracked Pale Green Prism": {
+      bonusType: "competence bonus",
+      cost: 4000,
+      bonus: {
+        saves: 1,
+      },
+    },
+    "Dusty Rose Prism Ioun Stone": {
+      bonusType: "insight",
+      cost: 5000,
+      bonus: {
+        ac: 1,
+        ffAC: 1,
+        touchAC: 1,
+      },
+    },
+  });
+
+  const charLevel = ref(6);
+
+  const charClasses = ref([
+    {
+      name: 'ninja',
+      level: charLevel.value,
+      hitDie: 8,
+      bab: 3 / 4,
+      first: true,
+      skillRanks: 4,
+      classSkills: [
+        'Acrobatics',
+        'Finesse',
+        'Influence',
+        'Perception',
+        'Society',
+        'Stealth',
+      ],
+      favored: {
+        hp: 0,
+        skill: charLevel.value,
+        race: {
+          dragonborn: 0,
+        },
+      },
+      saves: {
+        fortitude: false,
+        reflex: true,
+        will: false,
+      },
+      gestalt: false,
+    },  ]);
+
+  const level = computed(() =>
+    charClasses.value.reduce(
+      (accumulator, cur) =>
+        cur.gestalt ?? false
+          ? Math.max(accumulator, cur.level)
+          : accumulator + cur.level,
+      0
+    )
+  );
+
+  //DEFENSE
+
+  const defensiveAbilities = ref("");
+  const dr = ref("");
+  const resist = ref("");
+  const immune = ref("");
+  const sr = ref(0);
+  const weaknesses = ref("");
+  const saveAbilityScore = reactive({
+    fortitude: "constitution",
+    reflex: "dexterity",
+    will: "wisdom",
+  });
+
+  // OFFENSE
+
+  const tactics = "";
+
+  // STATISTICS
+
+  const pointBuy = reactive({
+    strength: {
+      pointBuy: 16,
+    },
+    dexterity: {
+      pointBuy: 15,
+    },
+    constitution: {
+      pointBuy: 13,
+    },
+    intelligence: {
+      pointBuy: 12,
+    },
+    wisdom: {
+      pointBuy: 13,
+    },
+    charisma: {
+      pointBuy: 14,
+    },
+  });
+  const feats = reactive({
+    'Two Weapon Fighting': {
+      bonusType: '',
+      bonus: {
+        reflex: 0,
+      },
+    },
+    'Improved Two Weapon Fighting': {
+      bonusType: '',
+      bonus: {
+        reflex: 0,
+      },
+    },
+    'Double Slice': {
+      bonusType: '',
+      bonus: {},
+    },
+    Outflank: {
+      bonusType: '',
+      bonus: {},
+    },
+    'Improved Outflank': {
+      bonusType: '',
+      bonus: {},
+    },
+  });
+  const skillPoints = reactive({
+    acrobatics: {
+      ranks: level.value,
+      ability: 'dexterity',
+    },
+    athletics: {
+      ranks: 1,
+      ability: 'strength',
+    },
+    finesse: {
+      ranks: level.value,
+      ability: 'dexterity',
+    },
+    influence: {
+      ranks: level.value,
+      ability: 'charisma',
+    },
+    nature: {
+      ranks: 1,
+      ability: 'intelligence',
+    },
+    perception: {
+      ranks: level.value,
+      ability: 'wisdom',
+    },
+    performance: {
+      ranks: 0,
+      ability: 'charisma',
+    },
+    religion: {
+      ranks: 1,
+      ability: 'intelligence',
+    },
+    society: {
+      ranks: level.value,
+      ability: 'intelligence',
+    },
+    spellcraft: {
+      ranks: 1,
+      ability: 'intelligence',
+    },
+    stealth: {
+      ranks: level.value,
+      ability: 'dexterity',
+    },
+    survival: {
+      ranks: 0,
+      ability: 'wisdom',
+    },
+  });
+
+  const ecology = "";
+  // ecology: {
+  //   environment: '',
+  //   organization: '',
+  //   treasure: '',
+  // },
+  const miscellaneous = "";
+
+  const baseAtk = computed(() => {
+    let bab = 0;
+
+    let maxBAB = 0;
+
+    const CharClasses = ref(charClasses.value);
+
+    CharClasses.value.forEach((charClasses) => {
+      if (charClasses.gestalt === true) {
+        maxBAB = Math.max(Math.floor(charClasses.level * charClasses.bab), maxBAB);
+      } else {
+        bab += Math.floor(charClasses.level * charClasses.bab);
+      }
+    });
+    bab += maxBAB;
+
+    return bab;
+  });
+
+  const toggle = reactive([
+
+    {
+      name: "Haste",
+      bonusType: "dodge",
+      active: false,
+      duration: 2,
+      bonus: {
+        attackRolls: 1,
+        reflex: 1,
+        ac: 1,
+        touchAC: 1,
+        attackCount: 1,
+      },
+    },
+    {
+      name: "Power Attack",
+      bonusType: "",
+      active: false,
+      duration: 2,
+      bonus: {
+        attackRolls: -(Math.floor(baseAtk.value / 4) + 1),
+        weaponDamage:
+          (Math.floor(baseAtk.value / 4) + 1) * (2)
+      },
+    },
+    {
+      name: "Inspire Courage",
+      bonusType: "competence",
+      active: false,
+      duration: 2,
+      bonus: {
+        attackRolls: 4,
+        weaponDamage: 4,
+      },
+    },
+    {
+      name: "Heroism",
+      bonusType: "morale",
+      active: false,
+      duration: 2,
+      bonus: {
+        attackRolls: 2,
+        saves: 2,
+        skills: 2,
+      },
+    },
+  ]);
+
+  const charMods = reactive({
+    Dragonborn: {
+      bonusType: 'racial',
+      bonus: {
+        strength: 2,
+      },
+    },
+    abpWeapon: {
+      bonusType: 'enhancement',
+      bonus: {
+        attackRolls: 1,
+        weaponDamage: 1,
+      },
+    },
+    abpAbilityScores: {
+      bonusType: 'enhancement',
+      bonus: {
+        strength: 2,
+        dexterity: 0,
+        constitution: 0,
+        intelligence: 0,
+        wisdom: 0,
+        charisma: 2,
+      },
+    },
+    abpResistance: {
+      bonusType: 'resistance',
+      bonus: {
+        saves: 2,
+      },
+    },
+    abpNaturalArmor: {
+      bonusType: 'naturalArmorEnhancement',
+      bonus: {
+        ac: 1,
+        ffAC: 1,
+      },
+    },
+    abpDeflection: {
+      bonusType: 'deflection',
+      bonus: {
+        ac: 1,
+        ffAC: 1,
+        touchAC: 1,
+      },
+    },
+    abpShield: {
+      bonusType: 'shieldEnhancement',
+      bonus: {
+        ac: 0,
+        ffAC: 0,
+
+      },
+    },
+    abpArmor: {
+      bonusType: 'armorEnhancement',
+      bonus: {
+        ac: 1,
+        ffAC: 1,
+      },
+    },
+    levelUp: {
+      bonusType: 'inherent',
+      bonus: {
+        constitution: 1,
+      },
+    },
+  });
+
+  const acBonuses = computed(() => acBonusesCalc(toggle, charMods, charGear, feats, traits, heritageTraits));
+  const modifiers = computed(() => modifiersCalc(toggle, charMods, charGear, feats, traits, heritageTraits));
+
+  charClasses.value.forEach((charClasses) => {
+    charClasses.casterLevel += modifiers.value.casterLevel ?? 0;
+    charClasses.spellPenetrationCasterLevel = charClasses.level
+      + (modifiers.value.casterLevel ?? 0)
+      + (modifiers.value.spellPenetrationCasterLevel ?? 0);
+  });
+  sr.value += modifiers.value.spellResistance ?? 0;
+
+  const sizeModifier = computed(() => {
+    let tempSize = sizeMod.value;
+
+    tempSize += modifiers.value.size ?? 0;
+
+    return tempSize;
+  });
+
+  const attackCount = computed(() => {
+    let tempattackCount = 3;
+
+    tempattackCount += modifiers.value.attackCount ?? 0;
+
+    // tempattackCount += Math.floor((baseAtk.value - 1) / 5) ?? 0;
+
+    return tempattackCount;
+  });
+
+
+  // STATISTICS
+
+  const abilityScores = computed(() => abilityScoresCalc(pointBuy, modifiers));
+
+  const abilityMods = computed(() => abilityModsCalc(abilityScores));
+
+  const cmb = computed(() => cmbCalc(abilityMods, baseAtk, sizeModifier, modifiers));
+  const cmd = computed(() => cmdCalc(abilityMods, baseAtk, sizeModifier, modifiers, acBonuses));
+
+  const skills = computed(() => {
+    const skillRanks = skillPoints;
+
+    const totalSkills = {
+      acrobatics: 0,
+      athletics: 0,
+      finesse: 0,
+      influence: 0,
+      nature: 0,
+      perception: 0,
+      performance: 0,
+      religion: 0,
+      society: 0,
+      spellcraft: 0,
+      stealth: 0,
+      survival: 0,
+    };
+
+    if (sizeModifier.value !== 0) {
+      totalSkills.acrobatics += (Math.log2(sizeModifier.value) + 1) * 2;
+      totalSkills.stealth += (Math.log2(sizeModifier.value) + 1) * 4;
+    }
+
+    const tempClassSkills = ref(charClasses.value[0].classSkills);
+
+    const keys = Object.keys(totalSkills);
+
+    const summarySkills = {};
+
+    keys.forEach((skillKey) => {
+      tempClassSkills.value.forEach((classSkill) => {
+        if (classSkill === skillKey && skillRanks[skillKey].ranks >= 1) totalSkills[skillKey] += 3;
+      });
 
       totalSkills[skillKey] += skillRanks[skillKey].ranks;
       totalSkills[skillKey] += abilityMods.value[skillRanks[skillKey].ability];
@@ -6663,115 +7216,111 @@ const jacob = computed(() => {
 
   const ranged = computed(() => rangedCalc(abilityMods, modifiers, charRanged, baseAtk, sizeModifier));
 
-  const revelationDC = computed(
-    () => 10 + Math.floor(level.value / 2) + abilityMods.value.charisma
-  );
+  const specialAttacks = reactive([
+    {
+      name: `sneak attack (+${Math.floor((level.value + 1) / 2)}d6`,
+    },
+    {
+      name: `Breath Weapon (1/day) (30-ft. line, +${Math.max(Math.floor(level.value / 2), 1) + abilityMods.value.charisma}, ${level.value}d6`,
+    },
+  ]);
 
   const featDescriptions = ref([
     {
-      name: "Grit",
-      type: "",
-      header: "Grit (4/day)",
+      name: 'two-weapon fighting',
+      type: 'combat',
+      header: 'Two-Weapon Fighting',
       description: [
-        "At the start of each day, a gunslinger gains a number of grit points equal to her Charisma modifier (minimum 1). Her grit goes up or down throughout the day, but usually cannot go higher than her Charisma modifier (minimum 1).",
-        "",
-        "Critical Hit with a Firearm: Each time the gunslinger confirms a critical hit with a firearm attack while in the heat of combat, she regains 1 grit point.",
-        "Confirming a critical hit on a helpless or unaware creature or on a creature that has fewer Hit Dice than half the gunslinger’s character level does not restore grit.",
-        "",
-        "Killing Blow with a Firearm: When the gunslinger reduces a creature to 0 or fewer hit points with a firearm attack while in the heat of combat, she regains 1 grit point.",
-        "Destroying an unattended object, reducing a helpless or unaware creature to 0 or fewer hit points, or reducing a creature that has fewer Hit Dice than half the gunslinger’s character level to 0 or fewer hit points does not restore any grit."
+        'Your penalties on attack rolls for fighting with two weapons are reduced. The penalty for your primary hand lessens by 2 and the one for your off hand lessens by 6',
       ],
     },
     {
-      name: "Deadeye",
-      type: "Ex",
-      header: "Deadeye (Ex)",
+      name: 'double slice',
+      type: 'combat',
+      header: 'Double Slice',
       description: [
-        "You can resolve an attack against touch AC instead of normal AC when firing beyond her firearm’s first range increment.",
-        "Performing this deed costs 1 grit point per range increment beyond the first. The gunslinger still takes the –2 penalty on attack rolls for each range increment beyond the first when she performs this deed.",
+        'Add your Strength bonus to damage rolls made with your off-hand weapon.',
       ],
     },
     {
-      name: "Gunslinger’s Dodge",
-      type: "Ex",
-      header: "Gunslinger’s Dodge (Ex)",
+      name: 'far shot',
+      type: 'combat',
+      header: 'Far Shot',
       description: [
-        "When a ranged attack is made against the gunslinger, she can spend 1 grit point to move 5 feet as an immediate action; doing so grants the gunslinger a +2 bonus to AC against the triggering attack.",
-        "This movement is not a 5-foot step, and provokes attacks of opportunity.",
-        "Alternatively, the gunslinger can drop prone to gain a +4 bonus to AC against the triggering attack. The gunslinger can only perform this deed while wearing medium or light armor, and while carrying no more than a light load."
-      ],
-    },
-    {
-      name: "Quick Clear",
-      type: "Ex",
-      header: "Quick Clear (Ex)",
-      description: [
-        "As a standard action, the gunslinger can remove the broken condition from a single firearm she is currently wielding, as long as that condition was gained by a firearm misfire.",
-        "The gunslinger must have at least 1 grit point to perform this deed.",
-        "Alternatively, if the gunslinger spends 1 grit point to perform this deed, she can perform quick clear as a move-equivalent action instead of a standard action."
-      ],
-    },
-    {
-      name: "Charming Performance",
-      type: "",
-      header: "Charming Performance",
-      description: [
-        "You can use Perform, rather than Diplomacy, to improve an NPC’s starting attitude toward you.",
-        "Alternatively, by praising another character, you may use Perform to improve an NPC’s starting attitude toward another character, though the DC for doing so is increased by 5.",
-        "Either use of this feat requires at least 5 minutes of performance.",
-        "You can’t improve an NPC’s attitude beyond friendly in this way, but if you would have made them helpful, you gain a +2 bonus on your next normal Diplomacy check against that NPC attempted within 24 hours.",
-      ],
-    },
-    {
-      name: "Roll With It",
-      type: "",
-      header: "Roll With It",
-      description: [
-        "If you are struck by a melee weapon you can try to convert some or all of that damage into movement that sends you off in an uncontrolled bouncing roll.",
-        "To do so, you must make an Acrobatics check (DC = 5 + the damage dealt from the attack) as an immediate action.",
-        "If you succeed in this check, you take no damage from the actual attack but instead convert that damage into movement with each point equating to 1 foot of movement.",
-        "For example, if you would have taken 6 points of damage, you would convert that into 6 feet of movement. You immediately move in a straight line in a direction of your choice this number of feet (rounded up to the nearest 5-foot-square), halting if you reach a distance equal to your actual speed.",
-        "If this movement would make you strike an object or creature of your size or larger, the movement immediately ends, you take 1d4 points of damage, and fall prone in that square.",
-        "This involuntary movement provokes attacks of opportunity normally if you move through threatened squares, but does not provoke an attack of opportunity from the creature that struck you in the first place.",
-        "You are staggered for 1 round after you attempt to use this feat, whether or not you succeed.",
+        'You only suffer a –1 penalty per full range increment between you and your target when using a ranged weapon.',
+        'Shurikens have a range increment of 10 feet',
       ],
     },
   ]);
-  const heroPointAbilities = ref("");
-  const mythicAbilities = ref("");
-
 
   const specialAbilities = ref([
     {
-      name: "Misfires",
-      type: "",
-      header: "Misfires (1–2)",
+      name: 'bleeding attack',
+      type: 'Combat',
+      header: 'Bleeding Attack',
       description: [
-        "If the natural result of your attack roll falls within a firearm’s misfire value, that shot misses, even if you would have otherwise hit the target.",
-        "When a firearm misfires, it gains the broken condition.",
-        "While it has the broken condition, it suffers the normal disadvantages that broken weapons do, and its misfire value increases by 4",
+        'A ninja with this trick can cause living opponents to bleed by hitting them with a sneak attack.',
+        'This attack causes the target to take an additional 2 points of bleed damage per sneak attack die',
+        'If a creature takes an amount of bleed damage equal to their constitution score, the creature sustains an amount of damage equal to half their maximum HP',
       ],
     },
     {
-      name: "Scatter Weapon Quality",
-      type: "",
-      header: "Scatter Weapon Quality",
+      name: 'Sneak Attack',
+      type: '',
+      header: 'Sneak Attack +1d6',
       description: [
-        "A weapon with the scatter weapon quality can shoot two different types of ammunition. It can fire normal bullets that target one creature, or it can make a scattering shot, attacking all creatures within a cone.",
-        "When a scatter weapon attacks all creatures within a cone, it makes a separate attack roll against each creature within the cone.",
-        "Each attack roll takes a –2 penalty, and its attack damage cannot be modified by precision damage or damage-increasing feats such as Vital Strike.",
-        "Effects that grant concealment, such as fog or smoke, or the blur, invisibility, or mirror image spells, do not foil a scatter attack.",
-        "If any of the attack rolls threaten a critical, confirm the critical for that attack roll alone.",
-        "A firearm that makes a scatter shot misfires only if all of the attack rolls made misfire.",
-        "If a scatter weapon explodes on a misfire, it deals triple its damage to all creatures within the misfire radius.",
+        'If a ninja can catch an opponent when he is unable to defend himself effectively from her attack, she can strike a vital spot for extra damage.',
+        'The ninja’s attacks deal extra damage anytime her target would be denied a Dexterity bonus to AC (whether the target actually has a Dexterity bonus or not), or when the ninja flanks her target. This extra damage is 1d6 at 1st level, and increases by 1d6 every two ninja levels thereafter. Bonus damage from sneak attacks is precision damage. Should the ninja score a critical hit with a sneak attack, this precision damage is not multiplied. Ranged attacks count as sneak attacks only if the target is within 30 feet.',
+        'With a weapon that deals nonlethal damage (such as a sap, unarmed strike, or whip), a ninja can make a sneak attack that deals nonlethal damage instead of lethal damage. She cannot use a weapon that deals lethal damage to deal nonlethal damage in a sneak attack, even with the usual –4 penalty.',
+        'The ninja must be able to see the target well enough to pick out a vital spot, and must be able to reach this spot. A ninja cannot sneak attack while striking a creature that has concealment.',
       ],
     },
     {
-      name: "Enhance Healing",
-      type: "Su",
-      header: "Enhance Healing (Su)",
+      name: 'Breath Weapon',
+      type: '',
+      header: `Breath Weapon, +${Math.max(Math.floor(level.value / 2), 1) + abilityMods.value.charisma}, ${level.value}d6 (2 ki points)`,
       description: [
-        "A number of times per day equal to his Charisma modifier, a songhealer can cause any healing effect from a spell completion or spell trigger item to function at a caster level equal to his class level.",
+        'This breath weapon deals 1d6 points of damage of your energy type per sorcerer level. Those caught in the area of the breath receive a Reflex save for half damage. The DC of this save is equal to 10 + 1/2 your character level + your Charisma modifier.',
+        'The shape of the breath weapon depends on your dragon type (as indicated on the above chart). At 9th level, you can use this ability twice per day. At 17th level, you can use this ability three times per day. At 20th level, you can use this ability four times per day.',
+        'Alternatively, you may use 2 ki points to use the breath attack again',
+      ],
+    },
+    {
+      name: 'ki pool',
+      type: 'Su',
+      header: `Ki Pool (Su) +${Math.max(Math.floor(level.value / 2), 1) + abilityMods.value.charisma}/day`,
+      description: [
+        'At 2nd level, a ninja gains a pool of ki points, supernatural energy she can use to accomplish amazing feats. The number of points in the ninja’s ki pool is equal to 1/2 her ninja level + her Charisma modifier.',
+        'As long as she has at least 1 point in her ki pool, she treats any Acrobatics skill check made to jump as if she had a running start. At 10th level, she also reduces the DC of Acrobatics skill checks made to jump by 1/2 (although she still cannot move farther than her speed allows).',
+        'By spending 1 point from her ki pool, a ninja can make one additional attack during a two-weapon fighting attack. In addition, she can spend 1 point to increase her speed by 20 feet for 1 round.',
+        'Finally, a ninja can spend 1 point from her ki pool to give herself a +4 insight bonus on Stealth checks for 1 round. Each of these powers is activated as a swift action. A ninja can gain additional powers that consume points from her ki pool by selecting certain ninja tricks.',
+      ],
+    },
+    {
+      name: 'vanishing trick',
+      type: 'Su',
+      header: 'Vanishing Trick (Su) (1 ki point)',
+      description: [
+        'As a single action, the ninja can disappear for 1 round per level.',
+        'This ability functions as invisibility. Using this ability uses up 1 ki point.',
+      ],
+    },
+    {
+      name: 'flurry of stars',
+      type: 'Ex',
+      header: 'Flurry of Stars (Ex) (1 ki point)',
+      description: [
+        'A ninja with this ability can expend 1 ki point from her ki pool and use 3 actions to attack with many shuriken.',
+        'During that attack, she can throw two additional shuriken at her highest attack bonus, but all of her shuriken attacks are made at a –2 penalty, including the two extra attacks.',
+      ],
+    },
+    {
+      name: 'shadow clone',
+      type: 'Ex',
+      header: 'Shadow Clone (Su) (1 ki point)',
+      description: [
+        'The ninja can create 1d4 shadowy duplicates of herself that conceal her true location. This ability functions as mirror image, using the ninja’s level as her caster level.',
+        'Using this ability uses 2 actions and 1 ki point.',
       ],
     },
   ]);
@@ -6821,15 +7370,1478 @@ const jacob = computed(() => {
     specialAbilities,
     toggle,
     modifiers,
-    heroPointAbilities,
-    mythicAbilities,
-    revelationDC,
+    attackCount,
+    specialAttacks,
   };
 });
-export const usejacob = defineStore("jacob", {
+export const useGorthor = defineStore("gorthor", {
   state: () => ({
-    jacob: jacob.value,
+    gorthor: gorthor.value,
   }),
 });
 
+const frey = computed(() => {
+  const name = ref("Frey");
+  const solo = ref(true);
+  const traits = ref([
+    {
+      name: "???",
+      bonusType: "racialTrait",
+      bonus: {},
+    },
+    {
+      name: "???",
+      bonusType: "trait",
+      bonus: {},
+    },
+  ]);
+  const alignment = ref('CG');
 
+  const heritage = ref("Human");
+  const heritageTraits = ref([]);
+  const type = ref("humanoid");
+  const subtype = ref(["human"]);
+  const senses = ref([""]);
+  const aura = ref("");
+  const speed = ref(30);
+
+  const size = ref("medium");
+  const sizeMod = ref(sizeTable[size.value]);
+  // TODO
+  const space = ref(5);
+  const reach = ref(5);
+
+  const charMelee = ref([
+    {
+      name: "Great Club",
+      weaponGroup: "one handed",
+      damage: -6,
+      attackCount:0,
+      dieCount: 2,
+      dieSize: 12,
+      critRange: 20,
+      critMult: 3,
+    },
+  ]);
+  const charRanged = ref([]);
+
+  const charGear = reactive({
+    "breastplate": {
+      price: 100,
+      weight: 25,
+      group: "medium",
+      bonusType: "armor",
+      bonus: {
+        ac: 6,
+        ffAC: 6,
+        acp: -3,
+        maxDex: 4,
+      },
+    },
+    "Cracked Pale Green Prism": {
+      bonusType: "competence bonus",
+      cost: 4000,
+      bonus: {
+        saves: 1,
+      },
+    },
+    "Dusty Rose Prism Ioun Stone": {
+      bonusType: "insight",
+      cost: 5000,
+      bonus: {
+        ac: 1,
+        ffAC: 1,
+        touchAC: 1,
+      },
+    },
+  });
+
+  const charLevel = ref(6);
+
+  const charClasses = ref([
+    {
+      name: "fighter",
+      archetype: ["high gaurdian"],
+      level: charLevel.value,
+      hitDie: 10,
+      bab: 1,
+      first: true,
+      skillRanks: 1,
+      classSkills: ["Acrobatics", "Athletics"],
+      favored: {
+        hp: 0,
+        skill: charLevel.value,
+        race: {
+          human: 0,
+        },
+      },
+      saves: {
+        fortitude: true,
+        reflex: false,
+        will: false,
+      },
+      gestalt: false,
+    },
+  ]);
+
+  const level = computed(() =>
+    charClasses.value.reduce(
+      (accumulator, cur) =>
+        cur.gestalt ?? false
+          ? Math.max(accumulator, cur.level)
+          : accumulator + cur.level,
+      0
+    )
+  );
+
+  //DEFENSE
+
+  const defensiveAbilities = ref("");
+  const dr = ref("");
+  const resist = ref("");
+  const immune = ref("");
+  const sr = ref(0);
+  const weaknesses = ref("");
+  const saveAbilityScore = reactive({
+    fortitude: "constitution",
+    reflex: "dexterity",
+    will: "wisdom",
+  });
+
+  // OFFENSE
+
+  const tactics = "";
+
+  // STATISTICS
+
+  const pointBuy = reactive({
+    strength: {
+      pointBuy: 16,
+    },
+    dexterity: {
+      pointBuy: 13,
+    },
+    constitution: {
+      pointBuy: 17,
+    },
+    intelligence: {
+      pointBuy: 11,
+    },
+    wisdom: {
+      pointBuy: 9,
+    },
+    charisma: {
+      pointBuy: 16,
+    },
+  });
+  const feats = reactive({
+    "Intimidating Prowess": {
+      bonusType: "",
+      bonus: {
+        influence: 4,
+      },
+    },
+    "Weapon Focus": {
+      bonusType: "",
+      bonus: {
+        attackRolls: 1,
+      },
+    },
+    "Weapon Specialization": {
+      bonusType: "",
+      bonus: {
+        weaponDamage: 2,
+      },
+    },
+    Outflank: {
+      bonusType: "",
+      bonus: {},
+    },
+    'Improved Outflank': {
+      bonusType: '',
+      bonus: {},
+    },
+  });
+  const skillPoints = reactive({
+    acrobatics: {
+      ranks: level.value,
+      ability: 'dexterity',
+    },
+    athletics: {
+      ranks: 1,
+      ability: 'strength',
+    },
+    finesse: {
+      ranks: level.value,
+      ability: 'dexterity',
+    },
+    influence: {
+      ranks: level.value,
+      ability: 'charisma',
+    },
+    nature: {
+      ranks: 1,
+      ability: 'intelligence',
+    },
+    perception: {
+      ranks: level.value,
+      ability: 'wisdom',
+    },
+    performance: {
+      ranks: 0,
+      ability: 'charisma',
+    },
+    religion: {
+      ranks: 1,
+      ability: 'intelligence',
+    },
+    society: {
+      ranks: level.value,
+      ability: 'intelligence',
+    },
+    spellcraft: {
+      ranks: 1,
+      ability: 'intelligence',
+    },
+    stealth: {
+      ranks: level.value,
+      ability: 'dexterity',
+    },
+    survival: {
+      ranks: 0,
+      ability: 'wisdom',
+    },
+  });
+
+  const ecology = "";
+  // ecology: {
+  //   environment: '',
+  //   organization: '',
+  //   treasure: '',
+  // },
+  const miscellaneous = "";
+
+  const baseAtk = computed(() => {
+    let bab = 0;
+
+    let maxBAB = 0;
+
+    const CharClasses = ref(charClasses.value);
+
+    CharClasses.value.forEach((charClasses) => {
+      if (charClasses.gestalt === true) {
+        maxBAB = Math.max(Math.floor(charClasses.level * charClasses.bab), maxBAB);
+      } else {
+        bab += Math.floor(charClasses.level * charClasses.bab);
+      }
+    });
+    bab += maxBAB;
+
+    return bab;
+  });
+
+  const toggle = reactive([
+    {
+      name: "two handing",
+      bonusType: "th",
+      duration: 2,
+      active: true,
+      bonus: {
+        // TODO strength / 2
+        weaponDamage: Math.floor(5 / 2),
+      },
+    },
+    {
+      name: "Haste",
+      bonusType: "dodge",
+      active: false,
+      duration: 2,
+      bonus: {
+        attackRolls: 1,
+        reflex: 1,
+        ac: 1,
+        touchAC: 1,
+        attackCount: 1,
+      },
+    },
+    {
+      name: "Power Attack",
+      bonusType: "PA",
+      active: true,
+      duration: 2,
+      bonus: {
+        attackRolls: -(Math.floor(baseAtk.value / 4) + 1),
+        weaponDamage:
+          (Math.floor(baseAtk.value / 4) + 1) * (3)
+      },
+    },
+    {
+      name: "Inspire Courage",
+      bonusType: "competence",
+      active: false,
+      duration: 2,
+      bonus: {
+        attackRolls: 4,
+        weaponDamage: 4,
+      },
+    },
+    {
+      name: "Heroism",
+      bonusType: "morale",
+      active: false,
+      duration: 2,
+      bonus: {
+        attackRolls: 2,
+        saves: 2,
+        skills: 2,
+      },
+    },
+  ]);
+
+  const charMods = reactive({
+    Human: {
+      bonusType: 'racial',
+      bonus: {
+        strength: 2,
+      },
+    },
+    weaponTraining: {
+      bonusType: "",
+      bonus: {
+        attackRolls: 2,
+        weaponDamage: 2,
+        reflex: 2,
+      },
+    },
+    abpWeapon: {
+      bonusType: 'enhancement',
+      bonus: {
+        attackRolls: 1,
+        weaponDamage: 1,
+      },
+    },
+    abpAbilityScores: {
+      bonusType: 'enhancement',
+      bonus: {
+        strength: 2,
+        dexterity: 0,
+        constitution: 0,
+        intelligence: 0,
+        wisdom: 0,
+        charisma: 2,
+      },
+    },
+    abpResistance: {
+      bonusType: 'resistance',
+      bonus: {
+        saves: 2,
+      },
+    },
+    abpNaturalArmor: {
+      bonusType: 'naturalArmorEnhancement',
+      bonus: {
+        ac: 1,
+        ffAC: 1,
+      },
+    },
+    abpDeflection: {
+      bonusType: 'deflection',
+      bonus: {
+        ac: 1,
+        ffAC: 1,
+        touchAC: 1,
+      },
+    },
+    abpShield: {
+      bonusType: 'shieldEnhancement',
+      bonus: {
+        ac: 0,
+        ffAC: 0,
+
+      },
+    },
+    abpArmor: {
+      bonusType: 'armorEnhancement',
+      bonus: {
+        ac: 1,
+        ffAC: 1,
+      },
+    },
+    levelUp: {
+      bonusType: 'inherent',
+      bonus: {
+        constitution: 1,
+      },
+    },
+  });
+
+  const acBonuses = computed(() => acBonusesCalc(toggle, charMods, charGear, feats, traits, heritageTraits));
+  const modifiers = computed(() => modifiersCalc(toggle, charMods, charGear, feats, traits, heritageTraits));
+
+  charClasses.value.forEach((charClasses) => {
+    charClasses.casterLevel += modifiers.value.casterLevel ?? 0;
+    charClasses.spellPenetrationCasterLevel = charClasses.level
+      + (modifiers.value.casterLevel ?? 0)
+      + (modifiers.value.spellPenetrationCasterLevel ?? 0);
+  });
+  sr.value += modifiers.value.spellResistance ?? 0;
+
+  const sizeModifier = computed(() => {
+    let tempSize = sizeMod.value;
+
+    tempSize += modifiers.value.size ?? 0;
+
+    return tempSize;
+  });
+
+  const attackCount = computed(() => {
+    let tempattackCount = 3;
+
+    tempattackCount += modifiers.value.attackCount ?? 0;
+
+    // tempattackCount += Math.floor((baseAtk.value - 1) / 5) ?? 0;
+
+    return tempattackCount;
+  });
+
+
+  // STATISTICS
+
+  const abilityScores = computed(() => abilityScoresCalc(pointBuy, modifiers));
+
+  const abilityMods = computed(() => abilityModsCalc(abilityScores));
+
+  const cmb = computed(() => cmbCalc(abilityMods, baseAtk, sizeModifier, modifiers));
+  const cmd = computed(() => cmdCalc(abilityMods, baseAtk, sizeModifier, modifiers, acBonuses));
+
+  const skills = computed(() => {
+    const skillRanks = skillPoints;
+
+    const totalSkills = {
+      acrobatics: 0,
+      athletics: 0,
+      finesse: 0,
+      influence: 0,
+      nature: 0,
+      perception: 0,
+      performance: 0,
+      religion: 0,
+      society: 0,
+      spellcraft: 0,
+      stealth: 0,
+      survival: 0,
+    };
+
+    if (sizeModifier.value !== 0) {
+      totalSkills.acrobatics += (Math.log2(sizeModifier.value) + 1) * 2;
+      totalSkills.stealth += (Math.log2(sizeModifier.value) + 1) * 4;
+    }
+
+    const tempClassSkills = ref(charClasses.value[0].classSkills);
+
+    const keys = Object.keys(totalSkills);
+
+    const summarySkills = {};
+
+    keys.forEach((skillKey) => {
+      tempClassSkills.value.forEach((classSkill) => {
+        if (classSkill === skillKey && skillRanks[skillKey].ranks >= 1) totalSkills[skillKey] += 3;
+      });
+
+      totalSkills[skillKey] += skillRanks[skillKey].ranks;
+      totalSkills[skillKey] += abilityMods.value[skillRanks[skillKey].ability];
+      totalSkills[skillKey] += modifiers.value[skillKey] ?? 0;
+      totalSkills[skillKey] += modifiers.value.skills ?? 0;
+
+      if (skillRanks[skillKey].ranks >= 1) {
+        summarySkills[skillKey] = totalSkills[skillKey];
+      }
+    });
+
+    return {
+      totalSkills,
+      summarySkills,
+    };
+  });
+
+
+  // INTRODUCTION
+
+  const cr = ref("");
+  const xp = ref(null);
+  const initiative = computed(() => initiativeCalc(abilityMods, modifiers));
+
+  // DEFENSE
+
+  const ac = computed(() => acCalc(abilityMods, modifiers, sizeModifier));
+
+  const maxHP = computed(() => maxHPCalc(abilityMods, modifiers, charClasses, solo, level));
+
+  const savingThrows = computed(() => savingThrowsCalc(abilityMods, modifiers, saveAbilityScore, charClasses, level));
+
+  // OFFENSE
+
+  const melee = computed(() => meleeCalc(abilityMods, modifiers, charMelee, baseAtk, sizeModifier));
+
+  const ranged = computed(() => rangedCalc(abilityMods, modifiers, charRanged, baseAtk, sizeModifier));
+
+  const specialAttacks = "";
+
+  const featDescriptions = ref([
+    {
+      name: "bodygaurd",
+      type: "combat",
+      header: "Bodygaurd",
+      description: [
+        "When an adjacent ally is attacked, you may use an attack of opportunity to attempt the aid another action to improve your ally’s AC. You may not use the aid another action to improve your ally’s attack roll with this attack.",
+      ],
+    },
+    {
+      name: "in harm's way",
+      type: "combat",
+      header: "In Harm's Way",
+      description: [
+        "While using the aid another action to improve an adjacent ally’s AC, you can intercept a successful attack against that ally as an immediate action, taking full damage from that attack and any associated effects (bleed, poison, etc.).",
+        "A creature cannot benefit from this feat more than once per attack.",
+      ],
+    },
+  ]);
+
+  const specialAbilities = ref([
+    {
+      name: "difficult swings",
+      type: "combat",
+      header: "Difficult Swings (Weapon Mastery)",
+      description: [
+        "When you use all of your actions in a round to attack, you can force creatures to treat squares adjacent to you as difficult terrain until the beginning of your next turn.",
+        "You can choose to allow any creature you are aware of to ignore the difficult terrain you effectively create with this feat.",
+      ],
+    },
+    {
+      name: "weapon training",
+      type: "Ex",
+      header: "Weapon Training (Ex)",
+      description: [
+        "Starting at 5th level, a fighter can select one group of weapons, as noted below. Whenever he attacks with a weapon from this group, he gains a +1 bonus on attack and damage rolls.",
+      ],
+    },
+    {
+      name: "obligation",
+      type: "Ex",
+      header: "Obligation (Ex)",
+      description: [
+        "At 1st level, a high guardian can spend 1 minute of focused concentration each day to select a single ally as his obligation, vowing to keep that person alive for that day. Once he has chosen, he can’t change his obligation until the following day.",
+        "If his obligation dies, the high guardian must atone for 1 week before he can select another obligation.",
+      ],
+    },
+    {
+      name: "right hand",
+      type: "Ex",
+      header: "Right Hand (Ex)",
+      description: [
+        "At 1st level, a high guardian can take a 5-foot step as an immediate action, as long as he ends this movement adjacent to his obligation. If he takes this step, he cannot take a 5-foot step during his next turn and his total movement is reduced by 5 feet during his next turn.",
+        "This ability replaces the bonus feat gained at 1st level.",
+      ],
+    },
+    {
+      name: "defender’s reflexes",
+      type: "Ex",
+      header: "Defender’s Reflexes (Ex)",
+      description: [
+        "At 2nd level, a high guardian gains Combat Reflexes as a bonus feat, and he can use his Strength modifier instead of his Dexterity modifier to determine the number of additional attacks of opportunity he can make per round. If he already has Combat Reflexes, he instead gains Stand Still as a bonus feat.",
+        "This ability replaces the bonus feat gained at 2nd level.",
+      ],
+    },
+    {
+      name: "unassailable allegiance",
+      type: "Ex",
+      header: "Unassailable Allegiance (Ex)",
+      description: [
+        "At 2nd level, a high guardian gains a +1 bonus on Will saves against compulsion spells and effects. This bonus increases by 1 for every 4 fighter levels beyond 2nd.",
+        "This ability replaces bravery.",
+      ],
+    },
+  ]);
+  return {
+    name,
+    solo,
+    alignment,
+    heritage,
+    type,
+    subtype,
+    senses,
+    aura,
+    speed,
+    charLevel,
+    charClasses,
+    sizeMod,
+    space,
+    reach,
+    defensiveAbilities,
+    dr,
+    resist,
+    immune,
+    sr,
+    weaknesses,
+    saveAbilityScore,
+    tactics,
+    charGear,
+    ecology,
+    miscellaneous,
+    initiative,
+    cr,
+    xp,
+    maxHP,
+    ac,
+    acBonuses,
+    savingThrows,
+    melee,
+    ranged,
+    baseAtk,
+    cmb,
+    cmd,
+    skills,
+    abilityScores,
+    abilityMods,
+    featDescriptions,
+    specialAbilities,
+    toggle,
+    modifiers,
+    attackCount,
+    specialAttacks,
+  };
+});
+export const useFrey = defineStore("frey", {
+  state: () => ({
+    frey: frey.value,
+  }),
+});
+
+const ainsel = computed(() => {
+  const name = ref("Ainsel Fairweather");
+  const solo = ref(true);
+  const traits = ref([
+    {
+      name: "???",
+      bonusType: "trait",
+      bonus: {},
+    },
+    {
+      name: "Strength of Submission",
+      bonusType: "trait",
+      bonus: {
+        attackRolls: 1,
+        weaponDamage: 1,
+      },
+    },
+  ]);
+  const alignment = ref("LE");
+
+  const heritage = ref("Slyph");
+  const heritageTraits = ref([
+    "Superior Darkvision",
+    {
+      name: "Keen Senses",
+      bonusType: "racial",
+      bonus: {
+        perception: 2,
+      },
+    },
+    {
+      name: "Voice in the Darkness",
+      bonusType: "racial",
+      bonus: {
+        intimidate: 2,
+        stealth: 2,
+      },
+    },
+  ]);
+  const type = ref("humanoid");
+  const subtype = ref(["human", "native outsider"]);
+  const senses = ref(["darkvision 60 ft."]);
+  const aura = ref("");
+  const speed = ref(30);
+
+  const size = ref("medium");
+  const sizeMod = ref(sizeTable[size.value]);
+  // TODO
+  const space = ref(5);
+  const reach = ref(5);
+
+  const charMelee = ref([
+    {
+      name: "cestus",
+      weaponGroup: "light",
+      attackCount: 0,
+      attackPenalty: 0,
+      attack: 0,
+      damage: 0,
+      dieCount: 1,
+      dieSize: 4,
+      critRange: 19,
+    },
+  ]);
+  const charRanged = ref([
+    {
+      name: "generic ranged attack",
+    },
+  ]);
+
+  const charGear = reactive({
+    "Belt of Dex +2": {
+      bonusType: "enhancement",
+      cost: 4000,
+      bonus: {
+        strength: 0,
+        dexterity: 2,
+        constitution: 0,
+      },
+    },
+    "Belt of Int +2": {
+      bonusType: "enhancement",
+      cost: 4000,
+      bonus: {
+        intelligence: 2,
+        wisdom: 0,
+        charisma: 0,
+      },
+    },
+    "Cloak of Resistance +2": {
+      bonusType: "resistance",
+      cost: 4000,
+      bonus: {
+        saves: 2,
+
+      },
+    },
+    "Cracked Dusty Rose Prism Ioun Stone": {
+      bonusType: "insight",
+      cost: 500,
+      bonus: {
+        initiative: 1,
+      },
+    },
+    "Masterwork Thieves Tools (Disable Device)": {
+      bonusType: "circumstance",
+      bonus: {
+        "disable device": 2,
+      },
+    },
+    "Bracers of Armor +8": {
+      bonusType: "armor",
+      bonus: {
+        ac: 8,
+        ffAC: 8,
+      },
+    },
+  });
+
+  const charLevel = ref(20);
+
+  const charClasses = ref([
+    {
+      archetype: ["Sacred Fist"],
+      name: "warpriest",
+      level: charLevel.value - 10,
+      hitDie: 8,
+      bab: 3 / 4,
+      first: true,
+      skillRanks: 2,
+      classSkills: [
+        'Craft',
+        'Diplomacy',
+        'Heal',
+        'Knowledge (history)',
+        'Knowledge (planes)',
+        'Knowledge (religion)',
+        'Profession',
+        'Sense Motive',
+        'Spellcraft',
+      ],
+      favored: {
+        hp: charLevel.value - 10,
+        skill: 0,
+        race: {},
+      },
+      saves: {
+        fortitude: true,
+        reflex: false,
+        will: true,
+      },
+      casterLevel: charLevel.value - 1,
+      casting: "prepared",
+      castingStat: "wisdom",
+      spells: {
+        '6th': {
+          slots: 4,
+          prepared: [
+            'Heal',
+            'Harm',
+            'Word of Recall',
+            'Dispel Magic, Greater',
+            'Source Severance',
+          ],
+        },
+        '5th': {
+          slots: 5,
+          prepared: [
+            'Caustic Blood',
+            'unholy ice',
+            'holy ice',
+            'Cleanse',
+            'break enchantment',
+            'forbid action, greater',
+            'forbid action',
+          ],
+        },
+        '4th': {
+          slots: 5,
+          prepared: [
+            'Magic Weapon, Greater',
+            'Divine Power',
+            'Symbol of Pain',
+            'Spell Immunity',
+            'Airwalk',
+          ],
+        },
+        '3rd': {
+          slots: 5,
+          prepared: [
+            'Deeper Darkness',
+            'Borrow Fortune',
+            'Stone Shape',
+            'Protection from Energy',
+            'Channel Vigor',
+            'Bestow Curse',
+          ],
+        },
+        '2nd': {
+          slots: 5,
+          prepared: [
+            'Eagle\'s Splendor',
+            'lesser restoration',
+            'Weapon of Awe',
+            'Ironskin',
+            'hold person',
+            'spiritual weapon',
+          ],
+        },
+        '1st': {
+          slots: 5,
+          prepared: [
+            'Shield of Faith',
+            'Moment of Greatness',
+            'Murderous Command',
+            'Lucky Number',
+            'Fallback Strategy',
+            'advanced scurry',
+          ],
+        },
+        Orisons: {
+          prepared: [
+            'Create Water',
+            'Read Magic',
+            'Stabilize',
+            'Bleed',
+            'Detect Magic',
+            'detect poison',
+          ],
+        },
+
+      },
+    },
+    {
+      archetype: [],
+      name: "Evangelist",
+      level: charLevel.value - 10,
+      hitDie: 8,
+      bab: 3 / 4,
+      first: false,
+      skillRanks: 6,
+      classSkills: [
+        'Craft',
+        'Diplomacy',
+        'Heal',
+        'Knowledge (religion)',
+        'Perception',
+        'Profession',
+      ],
+      favored: {
+        hp: charLevel.value - 10,
+        skill: 0,
+        race: {},
+      },
+      saves: {
+        fortitude: false,
+        reflex: true,
+        will: false,
+      },
+    },
+  ]);
+
+  const level = computed(() =>
+    charClasses.value.reduce(
+      (accumulator, charClass) =>
+        charClass.gestalt ?? false
+          ? Math.max(accumulator, charClass.level)
+          : accumulator + charClass.level,
+      0
+    )
+  );
+
+  //DEFENSE
+
+  const defensiveAbilities = ref("");
+  const dr = ref("");
+  const resist = ref("");
+  const immune = ref("");
+  const sr = ref(0);
+  const weaknesses = ref("");
+  const saveAbilityScore = reactive({
+    fortitude: "constitution",
+    reflex: "dexterity",
+    will: "wisdom",
+  });
+
+  // OFFENSE
+
+  const tactics = "";
+
+  // STATISTICS
+
+  const pointBuy = reactive({
+    strength: {
+      pointBuy: 7,
+    },
+    dexterity: {
+      pointBuy: 16,
+    },
+    constitution: {
+      pointBuy: 16,
+    },
+    intelligence: {
+      pointBuy: 16,
+    },
+    wisdom: {
+      pointBuy: 13,
+    },
+    charisma: {
+      pointBuy: 7,
+    },
+  });
+  const feats = reactive({
+  });
+  const skillPoints = reactive({
+    acrobatics: {
+      ranks: level.value,
+      ability: "dexterity",
+    },
+    appraise: {
+      ranks: 0,
+      ability: "intelligence",
+    },
+    bluff: {
+      ranks: level.value,
+      ability: "charisma",
+    },
+    climb: {
+      ranks: 0,
+      ability: "strength",
+    },
+    craft: {
+      ranks: 0,
+      ability: "intelligence",
+    },
+    diplomacy: {
+      ranks: level.value,
+      ability: "charisma",
+    },
+    "disable device": {
+      ranks: 0,
+      ability: "dexterity",
+    },
+    disguise: {
+      ranks: 0,
+      ability: "charisma",
+    },
+    "escape artist": {
+      ranks: 0,
+      ability: "dexterity",
+    },
+    fly: {
+      ranks: 0,
+      ability: "dexterity",
+    },
+    "handle animal": {
+      ranks: 0,
+      ability: "charisma",
+    },
+    heal: {
+      ranks: 0,
+      ability: "wisdom",
+    },
+    intimidate: {
+      ranks: 0,
+      ability: "charisma",
+    },
+    knowledge: {
+      arcana: {
+        ranks: 0,
+        ability: "intelligence",
+      },
+      dungeoneering: {
+        ranks: 0,
+        ability: "intelligence",
+      },
+      engineering: {
+        ranks: 0,
+        ability: "intelligence",
+      },
+      geography: {
+        ranks: 0,
+        ability: "intelligence",
+      },
+      history: {
+        ranks: 0,
+        ability: "intelligence",
+      },
+      local: {
+        ranks: 0,
+        ability: "intelligence",
+      },
+      nature: {
+        ranks: 0,
+        ability: "intelligence",
+      },
+      nobility: {
+        ranks: 0,
+        ability: "intelligence",
+      },
+      planes: {
+        ranks: 0,
+        ability: "intelligence",
+      },
+      religion: {
+        ranks: 0,
+        ability: "intelligence",
+      },
+    },
+    linguistics: {
+      ranks: 0,
+      ability: "intelligence",
+    },
+    perception: {
+      ranks: 0,
+      ability: "wisdom",
+    },
+    perform: {
+      ranks: level.value,
+      ability: "charisma",
+    },
+    profession: {
+      ranks: 0,
+      ability: "wisdom",
+    },
+    ride: {
+      ranks: 1,
+      ability: "dexterity",
+    },
+    "sense motive": {
+      ranks: 0,
+      ability: "wisdom",
+    },
+    "slight of hand": {
+      ranks: 0,
+      ability: "dexterity",
+    },
+    spellcraft: {
+      ranks: level.value,
+      ability: "intelligence",
+    },
+    stealth: {
+      ranks: level.value,
+      ability: "dexterity",
+    },
+    survival: {
+      ranks: 0,
+      ability: "wisdom",
+    },
+    swim: {
+      ranks: 0,
+      ability: "strength",
+    },
+    "use magic device": {
+      ranks: 0,
+      ability: "charisma",
+    },
+  });
+
+  const ecology = "";
+  // ecology: {
+  //   environment: '',
+  //   organization: '',
+  //   treasure: '',
+  // },
+  const miscellaneous = "";
+
+  const baseAtk = computed(() => {
+    let bab = 0;
+
+    let maxBAB = 0;
+
+    const CharClasses = ref(charClasses.value);
+
+    CharClasses.value.forEach((charClasses) => {
+      if (charClasses.gestalt === true) {
+        maxBAB = Math.max(Math.floor(charClasses.level * charClasses.bab), maxBAB);
+      } else {
+        bab += Math.floor(charClasses.level * charClasses.bab);
+      }
+    });
+    bab += maxBAB;
+
+    return bab;
+  });
+
+  const toggle = reactive([
+    {
+      name: "Haste",
+      bonusType: "dodge",
+      active: false,
+      duration: 2,
+      bonus: {
+        attackRolls: 1,
+        reflex: 1,
+        ac: 1,
+        touchAC: 1,
+      },
+    },
+    {
+      name: "Power Attack",
+      bonusType: "",
+      active: true,
+      duration: 2,
+      bonus: {
+        attackRolls: -(Math.floor(baseAtk.value / 4) + 1),
+        weaponDamage:
+          (Math.floor(baseAtk.value / 4) + 1) * (2)
+      },
+    },
+    {
+      name: "Ki Insight",
+      bonusType: "insight",
+      active: false,
+      duration: 2,
+      bonus: {
+        ac: 5,
+        touchAC: 5,
+      },
+    },
+    {
+      name: "Ki Dodge (1 round)",
+      bonusType: "dodge",
+      active: false,
+      duration: 2,
+      bonus: {
+        ac: 4,
+        touchAC: 4,
+      },
+    },
+    {
+      name: "Shield of Faith",
+      bonusType: "deflection",
+      active: true,
+      duration: 2,
+      bonus: {
+        ac: 5,
+        touchAC: 5,
+      },
+    },
+    {
+      name: 'Flurry of Blows',
+      bonusType: '',
+      duration: 2,
+      active: true,
+      bonus: {
+        attackRolls: -2,
+        multiAttackCount: 1,
+      },
+    },
+    {
+      name: 'Ironskin',
+      bonusType: 'naturalArmorEnhancement',
+      duration: 2,
+      active: false,
+      bonus: {
+        ac: 7,
+        ffAC: 7,
+      },
+    },
+    {
+      name: 'Divine Power',
+      bonusType: 'luck',
+      duration: 2,
+      active: false,
+      bonus: {
+        attackRolls: 7,
+        weaponDamage: 7,
+      },
+    },
+    {
+      name: 'Spiritual Form',
+      bonusType: 'untyped',
+      duration: 2,
+      active: false,
+      bonus: {
+        dexterity: 4,
+      },
+    },
+    {
+      name: 'Apostle Kyton Template',
+      bonusType: 'kyton',
+      duration: 2,
+      active: false,
+      bonus: {
+        strength: 6,
+        dexterity: 4,
+        constitution: 6,
+        intelligence: 2,
+        wisdom: 6,
+        charisma: 6,
+        bluff: 4,
+        heal: 4,
+        intimidate: 4,
+        ac: 4,
+        ffAC: 4,
+      },
+    },
+    {
+      name: 'Destructive Attacks',
+      bonusType: 'morale',
+      duration: 2,
+      active: false,
+      bonus: {
+        weaponDamage: Math.floor(level.value / 2),
+      },
+    },
+
+
+  ]);
+
+  const charMods = reactive({
+    "Noble Drow": {
+      bonusType: "racial",
+      bonus: {
+        dexterity: 4,
+        constitution: -2,
+        intelligence: 2,
+        wisdom: 2,
+        charisma: 2,
+        spellResistance: 11 + level.value,
+      },
+    },
+    levelUp: {
+      bonusType: "levelUp",
+      bonus: {
+        constitution: 5,
+      },
+    },
+    inherent: {
+      bonusType: "inherent",
+      bonus: {
+        strength: 5,
+        dexterity: 5,
+        constitution: 5,
+        intelligence: 5,
+        wisdom: 5,
+        charisma: 5,
+      },
+    },
+    "Perfect Body Flawless Mind": {
+      bonusType: "pbfm",
+      bonus: {
+        constitution: 8,
+      },
+    },
+    "Sacred Fist": {
+      bonusType: "dodge",
+      bonus: {
+        ac: 4,
+        touchAC: 4,
+        ffAC: 4,
+      },
+    },
+    "Protective Grace": {
+      bonusType: "dodge",
+      bonus: {
+        ac: 2,
+        touchAC: 2,
+      },
+    },
+    "Multitude of Talents": {
+      bonusType: "profane",
+      bonus: {
+        skills: 4,
+      },
+    },
+
+  });
+
+  const acBonuses = computed(() => acBonusesCalc(toggle, charMods, charGear, feats, traits, heritageTraits));
+  const modifiers = computed(() => modifiersCalc(toggle, charMods, charGear, feats, traits, heritageTraits));
+
+  charClasses.value.forEach((charClasses) => {
+    charClasses.casterLevel += modifiers.value.casterLevel ?? 0;
+    charClasses.spellPenetrationCasterLevel = charClasses.casterLevel
+      + (modifiers.value.casterLevel ?? 0)
+      + (modifiers.value.spellPenetrationCasterLevel ?? 0);
+  });
+  sr.value += modifiers.value.spellResistance ?? 0;
+
+
+  const multiAttackCount = computed(() => 1 + (modifiers.value.multiAttackCount ?? 0));
+
+
+  const attackCount = computed(() => {
+    let tempattackCount = 1;
+
+    tempattackCount += Math.floor((baseAtk.value - 1) / 5) ?? 0;
+
+    return tempattackCount;
+  });
+  const sizeModifier = computed(() => {
+    let tempSize = sizeMod.value;
+
+    tempSize += modifiers.value.size ?? 0;
+
+    return tempSize;
+  });
+
+  // STATISTICS
+  const abilityScores = computed(() => abilityScoresCalc(pointBuy, modifiers));
+  const abilityMods = computed(() => abilityModsCalc(abilityScores));
+  const cmb = computed(() => cmbCalc(abilityMods, baseAtk, sizeModifier, modifiers));
+  const cmd = computed(() => cmdCalc(abilityMods, baseAtk, sizeModifier, modifiers, acBonuses));
+  const skills = computed(() => skillsCalc(abilityMods, sizeModifier, modifiers, skillPoints, charClasses));
+
+  // INTRODUCTION
+  const cr = ref("");
+  const xp = ref(null);
+  const initiative = computed(() => initiativeCalc(abilityMods, modifiers));
+
+  // DEFENSE
+  const ac = computed(() => {
+    let tempAC = acCalc(abilityMods, modifiers, sizeModifier)
+    for (const acKey in tempAC) {
+      tempAC[acKey] += abilityMods.value.wisdom
+    }
+    return tempAC
+  });
+
+  const maxHP = computed(() => maxHPCalc(abilityMods, modifiers, charClasses, solo, level));
+  const savingThrows = computed(() => savingThrowsCalc(abilityMods, modifiers, saveAbilityScore, charClasses, level));
+
+  // OFFENSE
+  const melee = computed(() => meleeCalc(abilityMods, modifiers, charMelee, baseAtk, sizeModifier));
+  const ranged = computed(() => rangedCalc(abilityMods, modifiers, charRanged, baseAtk, sizeModifier));
+
+
+  const revelationDC = computed(
+    () => 10 + Math.floor(level.value / 2) + abilityMods.value.charisma
+  );
+
+  const featDescriptions = ref([
+    {
+      name: "Roll With It",
+      type: "",
+      header: "Roll With It",
+      description: [
+        "If you are struck by a melee weapon you can try to convert some or all of that damage into movement that sends you off in an uncontrolled bouncing roll.",
+        "To do so, you must make an Acrobatics check (DC = 5 + the damage dealt from the attack) as an immediate action.",
+        "If you succeed in this check, you take no damage from the actual attack but instead convert that damage into movement with each point equating to 1 foot of movement.",
+        "For example, if you would have taken 6 points of damage, you would convert that into 6 feet of movement. You immediately move in a straight line in a direction of your choice this number of feet (rounded up to the nearest 5-foot-square), halting if you reach a distance equal to your actual speed.",
+        "If this movement would make you strike an object or creature of your size or larger, the movement immediately ends, you take 1d4 points of damage, and fall prone in that square.",
+        "This involuntary movement provokes attacks of opportunity normally if you move through threatened squares, but does not provoke an attack of opportunity from the creature that struck you in the first place.",
+        "You are staggered for 1 round after you attempt to use this feat, whether or not you succeed.",
+      ],
+    },
+  ]);
+  const heroPointAbilities = ref("");
+  const mythicAbilities = ref("");
+
+
+  const specialAbilities = ref([
+    {
+      name: "Panache",
+      type: "",
+      header: "Panache (4/day)",
+      description: [
+        "At the start of each day, a swashbuckler gains a number of panache points equal to her Charisma modifier (minimum 1). Her grit goes up or down throughout the day, but usually cannot go higher than her Charisma modifier (minimum 1).",
+        "",
+        "Critical Hit with a Light Weapon: Each time the swashbuckler confirms a critical hit with a Light Weapon while in the heat of combat, she regains 1 panache point.",
+        "Confirming a critical hit on a helpless or unaware creature or on a creature that has fewer Hit Dice than half the swashbuckler’s character level does not restore panache.",
+        "",
+        "Killing Blow with a Light Weapon: When the swashbuckler reduces a creature to 0 or fewer hit points with a Light Weapon while in the heat of combat, she regains 1 panache point.",
+        "Destroying an unattended object, reducing a helpless or unaware creature to 0 or fewer hit points, or reducing a creature that has fewer Hit Dice than half the swashbuckler’s character level to 0 or fewer hit points does not restore any panache."
+      ],
+    },
+  ]);
+
+  return {
+    name,
+    solo,
+    alignment,
+    heritage,
+    type,
+    subtype,
+    senses,
+    aura,
+    speed,
+    level,
+    charLevel,
+    charClasses,
+    sizeMod,
+    space,
+    reach,
+    defensiveAbilities,
+    dr,
+    resist,
+    immune,
+    sr,
+    weaknesses,
+    saveAbilityScore,
+    tactics,
+    charGear,
+    ecology,
+    miscellaneous,
+    initiative,
+    cr,
+    xp,
+    maxHP,
+    ac,
+    acBonuses,
+    savingThrows,
+    melee,
+    ranged,
+    baseAtk,
+    cmb,
+    cmd,
+    skills,
+    abilityScores,
+    abilityMods,
+    featDescriptions,
+    specialAbilities,
+    toggle,
+    modifiers,
+    heroPointAbilities,
+    mythicAbilities,
+    revelationDC,
+    attackCount,
+    multiAttackCount,
+  };
+});
+export const useAinsel = defineStore("ainsel", {
+  state: () => ({
+    ainsel: ainsel.value,
+  }),
+});

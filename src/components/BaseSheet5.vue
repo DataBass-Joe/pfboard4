@@ -50,7 +50,7 @@
         <div>
           <b>Init </b><span id="initiative" v-text="formatBonus(character.initiative)"></span>
           <b> Senses </b>
-          <i id="senses" v-text="formatList(character.senses)"/>
+          <i id="senses" class="text-capitalize" v-text="formatList(character.senses)"/>
           <span>; Perception {{ formatBonus(character.skills.totalSkills.perception) }}</span>
 
         </div>
@@ -98,6 +98,7 @@
                 <b>Defensive Abilities </b>
                 <span class="text-capitalize">
           {{ formatArray(character.defensiveAbilities) }}
+                   (Stealth {{ formatBonus(character.skills.totalSkills.stealth + 20) }})
                             </span>
               </div>
               <div id="dr" v-if="character.dr">
@@ -184,17 +185,28 @@
 
         <div id="melee">
           <b>Melee </b>
-          <span v-for="(option, index) in character.melee" :key="index">
+          <div v-for="(option, index) in character.melee" :key="index">
             <span class="text-capitalize" v-text="option.name"/>
             <span v-text="'&nbsp;'"/>
 
-            <span v-if="option.attackCount > -1 ?? false">
-              <span v-for="n in (option.attackCount + character.attackCount)" :key="n">
-                <span v-for="m in character.multiAttackCount" :key="m">
-                <span v-text="formatBonus(option.attack + option.attackPenalty - ((n-1) * 5))"/>
+            <span v-if="option.attackCount >= 0 ?? false">
+              <span
+                v-for="n in option.attackCount + character.attackCount"
+                :key="n"
+              >
                 <span
-                  v-if="n !== (option.attackCount + character.attackCount) || m !== character.multiAttackCount">/</span>
-                </span>
+                  v-text="formatBonus(option.attack + (option.attackPenalty ?? 0)
+                  + (Math.max(0,( n - option.attackCount - character.attackCount + 2)) * -5)
+                  )"
+                />
+                <span v-if="option.iterativeAttackCount > 0 && (n - option.attackCount - character.attackCount + 2) === 1"
+                      v-text="'/' + formatBonus(option.attack + (option.attackPenalty ?? 0)
+                  + (Math.max(0,( n - option.attackCount - character.attackCount + 2)) * -5)
+                  )"/>
+                <span
+                  v-if="n !== option.attackCount + character.attackCount"
+                >/</span
+                >
               </span>
             </span>
 
@@ -210,16 +222,41 @@
               <span v-if="option.critMult && option.critMult !== 2" v-text="`/x${option.critMult}`"/>
               <span v-text="')'"/>
 
-              <span v-if="option.critMax" v-text="` (+${option.critMult * ((option.dieCount * option.dieSize) + option.damage) + 1} Max Crit)`"/>
+              <span v-if="option.critMax"
+                    v-text="` (+${option.critMult * ((option.dieCount * option.dieSize) + option.damage)} Max Crit)`"/>
             </span>
-          </span>
+                        <span v-if="index !== character.ranged.length - 1">, </span>
+
+          </div>
         </div>
         <div v-if="character.ranged[0]" id="ranged">
           <b>Ranged </b>
-          <span v-for="(option, index) in character.ranged" :key="index">
+          <div v-for="(option, index) in character.ranged" :key="index">
             <span class="text-capitalize" v-text="option.name"/>
             <span v-text="'&nbsp;'"/>
-            <span v-if="option.attack" v-text="formatBonus(option.attack)"/>
+            <span v-if="(option.attackCount > -1 ?? false)">
+              <span
+                v-for="n in option.attackCount + character.attackCount"
+                :key="n"
+              >
+                <span
+                  v-text="formatBonus(option.attack + (option.attackPenalty ?? 0)
+                  + (Math.max(0,( n - option.attackCount - character.attackCount + 2)) * -5)
+                  )"
+                />
+                <span v-if="option.iterativeAttackCount > 0
+                && (n - option.attackCount - character.attackCount + 2) === 1"
+                      v-text="'/' + formatBonus(option.attack + (option.attackPenalty ?? 0)
+                  + (Math.max(0,( n - option.attackCount - character.attackCount + 2)) * -5)
+                  )"/>
+                <span
+                  v-if="n !== option.attackCount + character.attackCount"
+                >/</span
+                >
+              </span>
+            </span>
+
+            <span v-else v-text="formatBonus(option.attack)"/>
             <span v-if="option.dieCount">
               <span v-text="'&nbsp;'"/>
               <span v-text="'('"/>
@@ -230,19 +267,20 @@
               <span v-if="option.critRange !== 20" v-text="`/${option.critRange}–20`"/>
               <span v-if="option.critMult && option.critMult !== 2" v-text="`/x${option.critMult}`"/>
               <span v-text="')'"/>
-              <span v-if="option.critMax" v-text="` (+${option.critMult * ((option.dieCount * option.dieSize) + option.damage)} Max Crit)`"/>
+              <span v-if="option.critMax"
+                    v-text="` (+${option.critMult * ((option.dieCount * option.dieSize) + option.damage)} Max Crit)`"/>
             </span>
             <span v-if="index !== character.ranged.length - 1">, </span>
-          </span>
+          </div>
         </div>
 
         <div v-if="character.specialAttacks" id="specialAttacks" class="text-capitalize">
           <b>Special Attacks </b>
-          <span v-for="(attack, index) in character.specialAttacks" :key="index"
+          <div v-for="(attack, index) in character.specialAttacks" :key="index"
                 class="special-attacks capitalize">
          {{ formatSpecial(attack) }}
             <span v-if="index !== character.specialAttacks.length - 1">, </span>
-          </span>
+          </div>
         </div>
 
         <div v-if="character.space !== 5 || character.reach !== 5">
@@ -250,6 +288,11 @@
           <b>Reach </b><span id="reach"> {{ character.reach }} ft.; </span>
         </div>
 
+        <span v-if="character.mythicFlag">
+          <input type="checkbox" v-for="index in
+              Array(character.mythicPower)"
+                 v-bind:key="index"/>
+        </span>
 
         <div id="spells" v-if="showSpells" class="text-capitalize">
           <div v-for="(caster, index)
@@ -302,22 +345,26 @@
           <b>CMB </b><span id="cmb" v-text="formatBonus(character.cmb)"/>;
           <b>CMD </b><span id="cmd" v-text="formatBonus(character.cmd)"/>;
         </div>
-        <div>
-          <b @click="skillToggle = !skillToggle"> Skills </b>
-          <span v-if="skillToggle">
-            <span class="text-capitalize">
-                <span>
-                  <span class="text-capitalize">
-                    {{ formatSkills(character.skills.totalSkills) }}
-                  </span>
+            <span class="text-capitalize" style="text-shadow: none;">
+                      <q-markup-table dense
+                                      flat
+                                      class="parchment"
+                                      style="max-width: 50%; min-width: 25px;">
+                        <thead>
+                        <tr>
+                          <th>Skill Name</th>
+                          <th>Skill Bonus</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="(value, key, index) in character.skills.totalSkills" :key="index">
+                          <td class="text-left">{{key}}</td>
+                          <td class="text-left">{{formatBonus(value)}}</td>
+                        </tr>
+                        </tbody>
+                      </q-markup-table>
                 </span>
-              <span>
 
-                </span>
-          </span>
-          </span>
-          <span v-if="!skillToggle">..</span>
-        </div>
         <div id="languages" v-text="character.languages"></div>
         <div id="sq" v-text="character.specialQualities"></div>
 
@@ -463,7 +510,7 @@
           >
             <q-item-section>
               <q-toggle
-                class="text-h7"
+                class="text-h7, text-capitalize"
                 v-model="bonus.active"
                 :label="bonus.name"
                 dark
@@ -578,27 +625,36 @@ function formatList(myObj, myKeys) {
   return list;
 }
 
+function allAreEqual(obj) {
+  return new Set(Object.values(obj)).size === 1;
+}
+
 function formatSkills(myObj) {
-  let list = '';
+  let list = '\n';
 
   const keys = Object.keys(myObj);
 
   const arrSize = keys.length;
 
-  // let comparer = 0;
+  if (allAreEqual(myObj)) {
+    list += formatBonus(myObj['arcana'])
+  } else {
 
-  for (let index = 0; index < arrSize; index += 1) {
-    if (keys[index] === 'knowledge') {
-      list += `${keys[index]} (${formatSkills(myObj[keys[index]])})`;
-      // comparer += 1;
-    } else if (myObj.name === 'knowledge' && myObj[keys[index]] !== myObj[keys[0]]) {
-      // comparer += 1;
-    } else {
-      list += `${keys[index]} `;
-      list += formatBonus(myObj[keys[index]]);
+    for (let index = 0; index < arrSize; index += 1) {
+
+      if (keys[index] === 'knowledge') {
+
+        list += `${keys[index]} (${formatSkills(myObj[keys[index]])})`;
+
+      } else {
+        list += `${keys[index]} `;
+        list += formatBonus(myObj[keys[index]]);
+      }
+      if (index !== arrSize - 1) list += '\n';
     }
-    if (index !== arrSize - 1) list += ', ';
+
   }
+
 
   return list;
 }
@@ -953,6 +1009,27 @@ input:checked + .slider:before {
 
 .fabDrag {
   transition: 0.3s ease;
+}
+
+input[type="checkbox"] {
+  /*font: inherit;*/
+  color: rgb(255, 253, 125);
+  width: 1.15em;
+  height: 1.15em;
+  font-size: 2em;
+  visibility: hidden;
+  cursor: pointer;
+}
+
+input[type="checkbox"]:before {
+  content: "\e3ac";
+  position: absolute;
+  visibility: visible;
+}
+
+input[type="checkbox"]:checked:before {
+    content: "\e3ac";
+    position: absolute;
 }
 
 

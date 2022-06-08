@@ -418,11 +418,27 @@ const sliderMax = computed(() => {
   return holder;
 });
 
+function getCharacter(name) {
+  return api.get(`/character?name=eq.${name}`)
+    .then((response) => response.data)
+    .catch(() => {
+      $q.notify({
+        color: 'negative',
+        position: 'top',
+        message: 'Loading failed',
+        icon: 'report_problem',
+      });
+    });
+}
+
+
+
 function pushData() {
+  const characterId = ref(0)
   api
     .post("/character", {
       name: name.value,
-      class_id: classRef[charClass.value].id,
+      class_id: charClassId.value,
       strength: abilityScores.value.strength,
       dexterity: abilityScores.value.dexterity,
       constitution: abilityScores.value.constitution,
@@ -431,13 +447,37 @@ function pushData() {
       charisma: abilityScores.value.charisma,
       point_buy: pointsSpent.value,
       heritage_id: heritageRef[heritage.value].id,
+      alignment: alignment.value
     })
     .then((response) => {
+
       console.log(response);
+      getCharacter(name.value)
+        .then((response) => {
+
+          console.log(response)
+          characterId.value = response[response.length - 1].id;
+
+          api
+            .post("/character_class", {
+              class_id: charClassId.value,
+              character_id: characterId.value,
+              class_level: 1,
+            })
+            .then((response) => {
+              console.log(response);
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        });
     })
     .catch((error) => {
       console.log(error);
     });
+
+
+
 }
 
 const cssVars = computed(() => ({

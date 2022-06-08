@@ -110,6 +110,12 @@ const linksList = [
     link: "/#/Immogen4",
   },
   {
+    title: "Ainsel",
+    icon: "fa-solid fa-wand-sparkles",
+    link: "/#/Ainsel",
+  },
+  {
+
     title: "Search",
     icon: "search",
     link: "/#/NewSearch",
