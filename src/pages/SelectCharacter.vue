@@ -2,9 +2,17 @@
 
   <div class="q-pa-md">
 
+    <q-tabs
+      v-model="tab"
+      class="text-teal"
+    >
+      <q-tab name="mails" icon="mail" label="Mails"/>
+      <q-tab name="alarms" icon="alarm" label="Alarms"/>
+      <q-tab name="movies" icon="movie" label="Movies"/>
+    </q-tabs>
     <q-btn-dropdown color="primary" label="CHOSE YOUR CHARACTER">
       <q-list>
-        <q-item v-for="(character, id) in characters" :key="id"
+        <q-item v-for="(character, id) in characterList" :key="id"
                 clickable
                 v-close-popup
                 @click="onCharClick(character.id)">
@@ -17,53 +25,169 @@
 
     <div v-if="character" id="introduction">
 
-        <div id="name" class="text-capitalize" v-text="character.name"></div>
+      <div id="name" class="text-capitalize" v-text="character.name"></div>
 
 
       <div>
         <span v-if="heritage" id="race" class="text-capitalize" v-text="heritage.name"/>
-<!--        <span v-if="character.charClasses[0].gestalt" v-text="' Gestalt'"/>-->
+        <!--        <span v-if="character.charClasses[0].gestalt" v-text="' Gestalt'"/>-->
         <span v-text="'&nbsp;'"/>
-        <span v-if="charClass" id="class" class="text-capitalize" v-text="charClass.name"/>
+        <span v-if="charClasses" id="class" class="text-capitalize">
+            {{
+            formatList(charClasses
+              , ['archetype', 'class_name', 'class_level'])
+          }}
+          </span>
       </div>
 
       <div>
         <span id="alignment" v-text="character.alignment"/>
         <span v-text="'&nbsp;'"/>
-<!--        <span id="size" class="text-capitalize">-->
-<!--            {{ character.size }}-->
-<!--          </span>-->
+        <!--        <span id="size" class="text-capitalize">-->
+        <!--            {{ character.size }}-->
+        <!--          </span>-->
         <span v-text="'&nbsp;'"/>
-<!--        <span id="type">-->
-<!--           {{ character.type }}-->
-<!--          </span>-->
-<!--        <span id="subtype">-->
-<!--            ({{ formatList(character.subtype) }})-->
-<!--          </span>-->
+        <!--        <span id="type">-->
+        <!--           {{ character.type }}-->
+        <!--          </span>-->
+        <!--        <span id="subtype">-->
+        <!--            ({{ formatList(character.subtype) }})-->
+        <!--          </span>-->
 
       </div>
 
-<!--      <div>-->
-<!--        <b>Init </b><span id="initiative" v-text="formatBonus(character.initiative)"></span>-->
-<!--        <b> Senses </b>-->
-<!--        <i id="senses" v-text="formatList(character.senses)"/>-->
-<!--        <span>; Perception {{ formatBonus(character.skills.totalSkills.perception) }}</span>-->
+      <!--      <div>-->
+      <!--        <b>Init </b><span id="initiative" v-text="formatBonus(character.initiative)"></span>-->
+      <!--        <b> Senses </b>-->
+      <!--        <i id="senses" v-text="formatList(character.senses)"/>-->
+      <!--        <span>; Perception {{ formatBonus(character.skills.totalSkills.perception) }}</span>-->
 
-<!--      </div>-->
+      <!--      </div>-->
 
-<!--      <div id="aura" v-text="character.aura"></div>-->
+      <!--      <div id="aura" v-text="character.aura"></div>-->
+
+    </div>
+
+    <div v-if="charGearList">
+
+      <q-table
+        title="Gear"
+        :rows="currentCharGear"
+        row-key="name"
+      />
 
     </div>
 
 
-
     <q-card class="q-ma-md" style="height: min-content">
+      <span v-if="tab === 'mails'">
 
+            <q-card-section>
+              <ClassSelection
+                v-bind:char-class-prop="charClass"
+                @char-class-submit="loadNewCharClass"
+                @char-class-id-submit="loadNewCharClassId"
+                @archetype-submit="loadNewArchetype"
+              />
+            </q-card-section>
+            <q-card-section>
+
+              <q-input filled
+                       name="classLevel"
+                       type="number"
+                       v-model="newCharLevel"
+                       label="How many levels are you taking in this class?"/>
+            </q-card-section>
+
+
+
+
+            </span>
+      <span v-else-if="tab === 'alarms'">
+
+            <q-card-section>
+              <q-input filled
+                       name="itemName"
+                       type="text"
+                       v-model="newItemName"
+                       label="*What is the name of this item?"/>
+              <q-input filled
+                       name="itemSlot"
+                       type="text"
+                       v-model="newItemSlot"
+                       label="*Which slot does this item go in?"/>
+              <q-input filled
+                       name="itemPrice"
+                       type="number"
+                       v-model="newItemPrice"
+                       label="How much does this item cost?"/>
+
+
+            </q-card-section>
+            <q-card-section v-if="newItemBonusCount !== 0" class="q-gutter-y-lg">
+              <div v-for="index in newItemBonusCount"
+                    :key="index"
+                    class="row q-gutter-x-lg"
+              >
+              <q-input filled
+                       name="bonusType"
+                       type="text"
+                       v-model="newItemBonuses[index - 1].bonus_type"
+                       stack-label
+                       label="* What is the bonus type?"/>
+              <q-input filled
+                       name="bonusAmount"
+                       type="number"
+                       v-model="newItemBonuses[index - 1].bonus_amount"
+                       stack-label
+                       label="What is the bonus amount?"/>
+              <q-input filled
+                       name="bonusTarget"
+                       type="text"
+                       v-model="newItemBonuses[index - 1].bonus_target"
+                       stack-label
+                       label="What is the bonus targeting?"/>
+
+                </div>
+            </q-card-section>
+            <q-card-section>
+              <q-btn
+                label="Add Bonus"
+                rounded
+                color="primary"
+                @click="newItemBonuses.push({}); newItemBonusCount += 1"/>
+              <q-btn
+                label="Remove Bonus"
+                rounded
+                color="primary"
+                @click="newItemBonuses.pop(); newItemBonusCount -= 1"/>
+            </q-card-section>
+
+      </span>
+      <span v-else-if="tab === 'movies'">
+            <q-card-section>
+              <q-input filled
+                       name="itemName"
+                       type="text"
+                       v-model="newItemName"
+                       label="*What is the name of this item?"/>
+              <q-input filled
+                       name="itemSlot"
+                       type="text"
+                       v-model="newItemSlot"
+                       label="*Which slot does this item go in?"/>
+              <q-input filled
+                       name="itemPrice"
+                       type="number"
+                       v-model="newItemPrice"
+                       label="How much does this item cost?"/>
+
+
+            </q-card-section>
+
+      </span>
       <q-card-section>
-        <level-up @class-level-submit="loadClassLevel"/>
-      </q-card-section>
-      <q-card-section>
-        <q-toggle v-model="accept" label="I accept these choices" />
+        <q-toggle v-model="accept" label="I accept these choices"/>
       </q-card-section>
       <q-card-section>
         <q-btn
@@ -74,16 +198,11 @@
         />
       </q-card-section>
 
-
-
-
-
     </q-card>
-
-
     <div class="q-pa-md">
-      <q-ajax-bar ref="bar" position="bottom" color="accent" size="10px" />
+      <q-ajax-bar ref="bar" position="bottom" color="accent" size="10px"/>
     </div>
+
 
   </div>
 
@@ -94,27 +213,44 @@ import {api} from "boot/axios";
 import {
   computed, ref, reactive, capitalize,
 } from 'vue';
-import {useMeta} from 'quasar';
-import LevelUp from 'src/components/LevelUp.vue';
+import {useMeta, useQuasar} from 'quasar';
+import ClassSelection from "src/components/ClassSelection.vue"
+
+const $q = useQuasar();
 
 const accept = ref(false);
 
+const character = ref()
+const heritage = ref()
+const charClass = ref()
+const charClasses = ref([])
 
-const charLevel = ref(0)
-
-function loadClassLevel(value) {
-  console.log(value)
-  charLevel.value = value
-  console.log(charLevel.value)
-
-}
+const tab = ref('movies')
 
 
 const metaData = reactive({
-  title:'Choose a character',
+  title: 'Choose a character',
 });
 
-const characters = ref()
+const characterList = ref()
+
+const newCharLevel = ref(1)
+const newCharClass = ref();
+const newCharClassId = ref();
+const newArchetype = ref();
+
+function loadNewCharClass(value) {
+  newCharClass.value = value
+}
+
+function loadNewCharClassId(value) {
+  newCharClassId.value = value
+}
+
+function loadNewArchetype(value) {
+  newArchetype.value = value
+}
+
 
 function getlist(table) {
   return api.get(`/${table}`)
@@ -129,20 +265,88 @@ function getlist(table) {
     });
 }
 
+const charGearList = ref()
+const currentCharGearList = ref([])
+const currentCharGear = ref([])
+
+function getGearList() {
+  api.get(`/character_gear?character_id=eq.${character.value.id}`)
+    .then((response) => {
+      charGearList.value = response.data
+
+      for (const charGearIndex in charGearList.value) {
+        api.get(`/gear?id=eq.${charGearList.value[charGearIndex].gear_id}`)
+          .then((response) => {
+            currentCharGearList.value.push(response.data[0])
+
+            api.get(`/gear_bonus?gear_id=eq.${charGearList.value[charGearIndex].gear_id}`)
+              .then((response) => {
+                currentCharGearList.value[charGearIndex].bonus = response.data
+                for (const responseEntry in response.data) {
+                  currentCharGear.value.push({
+                    name: currentCharGearList.value[charGearIndex].name,
+                    bonus_type: response.data[responseEntry].bonus_type,
+                    bonus_amount: response.data[responseEntry].bonus_amount,
+                    bonus_target: response.data[responseEntry].bonus_target
+
+                  })
+                }
+                })
+              .catch(() => {
+                $q.notify({
+                  color: 'negative',
+                  position: 'top',
+                  message: 'Loading failed',
+                  icon: 'report_problem',
+                });
+              });
+
+
+          })
+          .catch(() => {
+            $q.notify({
+              color: 'negative',
+              position: 'top',
+              message: 'Loading failed',
+              icon: 'report_problem',
+            });
+          });
+      }
+    })
+    .catch(() => {
+      $q.notify({
+        color: 'negative',
+        position: 'top',
+        message: 'Loading failed',
+        icon: 'report_problem',
+      });
+    });
+}
+
 getlist('character')
   .then((response) => {
-    characters.value = response;
+    characterList.value = response;
   });
 
 
 
 
-const character = ref()
-const heritage = ref()
-const charClass = ref()
 
 function getItem(table, id) {
   return api.get(`/${table}?id=eq.${id}`)
+    .then((response) => response.data)
+    .catch(() => {
+      $q.notify({
+        color: 'negative',
+        position: 'top',
+        message: 'Loading failed',
+        icon: 'report_problem',
+      });
+    });
+}
+
+function getGear(name) {
+  return api.get(`/gear?name=eq.${encodeURIComponent(name)}`)
     .then((response) => response.data)
     .catch(() => {
       $q.notify({
@@ -161,50 +365,141 @@ function onCharClick(id) {
 
       metaData.title = capitalize(character.value.name)
       useMeta(metaData);
+      getGearList();
+
+
+      api.get(`/character_class?character_id=eq.${character.value.id}`)
+        .then((response) => {
+
+          charClasses.value = response.data.reduce((result, item) => {
+            const existing = result.find(x => x.class_id === item.class_id);
+            if (existing) {
+              existing.class_level += item.class_level;
+            } else {
+              result.push(item);
+            }
+
+            return result;
+          }, []);
+
+
+          charClasses.value.forEach((charClass, index) => {
+            getItem('class', charClass.class_id)
+              .then((response) => {
+                charClasses.value[index].class_name = response[0].name;
+              });
+          })
+
+          console.log(charClasses.value)
+
+        })
+        .catch(() => {
+          $q.notify({
+            color: 'negative',
+            position: 'top',
+            message: 'Loading failed',
+            icon: 'report_problem',
+          });
+        });
 
       getItem('heritage', character.value.heritage_id)
         .then((response) => {
           heritage.value = response[0];
         });
 
-      getItem('class', character.value.class_id)
-        .then((response) => {
-          charClass.value = response[0];
-        });
-
     });
 
 }
 
 
-function pushData() {
-  const characterId = ref(0)
-
-
-  getCharacter(name.value)
+function pushClassData() {
+  api
+    .post("/character_class", {
+      class_id: newCharClassId.value,
+      character_id: character.value.id,
+      class_level: newCharLevel.value,
+    })
     .then((response) => {
+      console.log(response);
+      onCharClick(character.value.id)
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+function pushItemData() {
 
-      console.log(response)
-      characterId.value = response[response.length - 1].id;
+  const gearId = ref()
 
-      api
-        .post("/character_class", {
-          class_id: charClassId.value,
-          character_id: characterId.value,
-          class_level: 1,
-        })
+  api
+    .post("/gear", {
+      name: newItemName.value,
+      price: newItemPrice.value,
+      slot: newItemSlot.value,
+    })
+    .then((response) => {
+      console.log(response);
+
+      getGear(newItemName.value)
         .then((response) => {
-          console.log(response);
+
+          gearId.value = response[response.length - 1].id
+
+          console.log(gearId.value)
+
+
+          for (let newItemBonusesKey in newItemBonuses.value) {
+            console.log(newItemBonuses.value[newItemBonusesKey])
+            api
+              .post("/gear_bonus", {
+                gear_id: gearId.value,
+                bonus_type: newItemBonuses.value[newItemBonusesKey].bonus_type,
+                bonus_target: newItemBonuses.value[newItemBonusesKey].bonus_target,
+                bonus_amount: newItemBonuses.value[newItemBonusesKey].bonus_amount,
+              })
+              .then((response) => {
+                console.log(response);
+              })
+              .catch((error) => {
+                console.log(error);
+              });
+          }
+
+          console.log(character.value)
+          if (character.value !== undefined) {
+            api
+              .post("/character_gear", {
+                character_id: character.value.id,
+                gear_id: gearId.value,
+              })
+              .then((response) => {
+                console.log(response);
+                onCharClick(character.value.id)
+              })
+              .catch((error) => {
+                console.log(error);
+              });
+          }
+
+
+
         })
-        .catch((error) => {
-          console.log(error);
+        .catch(() => {
+          $q.notify({
+            color: 'negative',
+            position: 'top',
+            message: 'Loading failed',
+            icon: 'report_problem',
+          });
         });
+
+    })
+    .catch((error) => {
+      console.log(error);
     });
 
 
-
 }
-
 
 function onSubmit() {
   if (accept.value === true) {
@@ -214,7 +509,11 @@ function onSubmit() {
       icon: "cloud_done",
       message: "Submitted",
     });
-    pushData();
+    if (tab.value === 'mails') {
+      pushClassData()
+    } else if (tab.value === 'alarms') {
+      pushItemData()
+    }
   } else {
     $q.notify({
       color: "red-5",
@@ -224,6 +523,62 @@ function onSubmit() {
     });
   }
 }
+
+function formatList(myObj, myKeys) {
+  let list = '';
+
+  let keys;
+
+  if (arguments.length === 2) {
+    keys = myKeys;
+  } else {
+    keys = Object.keys(myObj);
+  }
+
+  if (Array.isArray(myObj)) {
+    const arrSize = myObj.length;
+    for (let index = 0; index < arrSize; index += 1) {
+      if (typeof myObj[index] !== 'undefined') {
+        if (typeof myObj[index] === 'object' && myObj[index] !== null) {
+          list += formatList(myObj[index], keys);
+
+          if (index !== arrSize - 1) {
+            list += ', ';
+          }
+        } else {
+          list += myObj[index];
+
+          if (index !== arrSize - 1) {
+            list += ' ';
+          }
+        }
+      }
+    }
+  } else {
+    const size = keys.length;
+
+    for (let index = 0; index < size; index += 1) {
+      if (typeof myObj[keys[index]] !== 'undefined') {
+        if (typeof myObj[keys[index]] === 'object') {
+          list += formatList(myObj[keys[index]]);
+          if (index !== size - 1) list += ' ';
+        } else {
+          list += myObj[keys[index]];
+        }
+        if (index !== size - 1) list += ' ';
+      }
+    }
+  }
+  return list;
+}
+
+
+const newItemName = ref();
+const newItemPrice = ref();
+const newItemSlot = ref('slotless')
+
+const newItemBonusCount = ref(0)
+const newItemBonuses = ref([])
 
 
 useMeta(metaData);

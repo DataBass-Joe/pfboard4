@@ -135,23 +135,7 @@ export default defineComponent({
     const leftDrawerOpen = ref(false);
     const $q = useQuasar()
 
-    // Requesting fullscreen mode:
-    $q.fullscreen.request()
-      .then(() => {
-        // success!
-      })
-      .catch(err => {
-        // oh, no!!!
-      })
 
-// Exiting fullscreen mode:
-    $q.fullscreen.exit()
-      .then(() => {
-        // success!
-      })
-      .catch(err => {
-        // oh, no!!!
-      })
 
 
     return {
