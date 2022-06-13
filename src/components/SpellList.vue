@@ -13,20 +13,33 @@
 
         <div v-for="(spellList, level) in caster.spells" v-bind:key="level"
              class="spells">
-          <span v-if="(spellList.slots + Math.floor((castingMod - spellLevel[level]) / 4 + 1)) > 0">
+          <span v-if="(spellList.slots + Math.floor((castingMod - spellLevel[level]) / 4 + 1)) > 0
+&& caster.name !== 'warlock'">
             <input type="checkbox" v-for="index in
             Array(spellList.slots + Math.floor((castingMod - spellLevel[level]) / 4 + 1))"
                  v-bind:key="index"/>
           </span>
+          <span v-else-if="spellList.slots > 0">
+                        <input type="checkbox" v-for="index in
+            Array(spellList.slots)"
+                               v-bind:key="index"/>
+                          <span v-text="` (DC ${10 + castingMod + spellLevel[level]})`"/>
+              <span v-text="` (+${castingMod + spellLevel[level]})`"/>
+          </span>
 
           <div v-show="toggleKey">
+
             <b>
               {{ level }}
+              <span v-if="caster.name !== 'warlock'">
+
               <span v-if="level !== 'Cantrips' && level !== 'Orisons'">
               ({{ spellList.slots + Math.floor((castingMod - spellLevel[level]) / 4 + 1) }}/day)
             </span>
               <span v-text="` (DC ${10 + castingMod + spellLevel[level]})`"/>
               <span v-text="` (+${castingMod + spellLevel[level]})`"/>
+            </span>
+
 
             </b>
             <span v-text="'&nbsp;'"/>

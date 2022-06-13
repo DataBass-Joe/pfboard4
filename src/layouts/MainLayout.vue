@@ -100,14 +100,14 @@ const linksList = [
     link: "/#/Bub",
   },
   {
-    title: "JacoBard",
+    title: "Jothriel",
     icon: "fa-solid fa-wand-sparkles",
-    link: "/#/JacoBard",
+    link: "/#/Jothriel",
   },
   {
-    title: "Immogen4",
+    title: "Select Character (alpha)",
     icon: "fa-solid fa-wand-sparkles",
-    link: "/#/Immogen4",
+    link: "/#/SelectCharacter",
   },
   {
     title: "Ainsel",

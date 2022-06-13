@@ -60,12 +60,12 @@ const routes = [
     children: [{ path: "", component: () => import("pages/Dominic.vue") }],
   },
   {
-    path: "/JacoBard",
+    path: "/Jothriel",
     component: () => import("layouts/MainLayout.vue"),
-    children: [{ path: "", component: () => import("pages/JacoBard.vue") }],
+    children: [{ path: "", component: () => import("pages/Jothriel.vue") }],
   },
   {
-    path: "/Immogen4",
+    path: "/SelectCharacter",
     component: () => import("layouts/MainLayout.vue"),
     children: [{ path: "", component: () => import("pages/SelectCharacter.vue") }],
   },

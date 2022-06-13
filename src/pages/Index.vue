@@ -1,35 +1,31 @@
 <template>
   <q-page class="row items-center">
-    <a href="/#/Sareah">
-      <div class="container">
-        <div class="blur"></div>
-        <iframe src="/#/Sareah"></iframe>
-      </div>
-    </a>
-    <a href="/#/Frey">
-      <div class="container">
-        <div class="blur"></div>
-        <iframe src="/#/Frey"></iframe>
-      </div>
-    </a>
-    <a href="/#/Immogen">
-      <div class="container">
-        <div class="blur"></div>
-        <iframe src="/#/Immogen"></iframe>
-      </div>
-    </a>
+<!--    <a href="/#/Sareah">-->
+<!--      <div class="container">-->
+<!--        <div class="blur"></div>-->
+<!--        <iframe src="/#/Sareah"></iframe>-->
+<!--      </div>-->
+<!--    </a>-->
+<!--    <a href="/#/Frey">-->
+<!--      <div class="container">-->
+<!--        <div class="blur"></div>-->
+<!--        <iframe src="/#/Frey"></iframe>-->
+<!--      </div>-->
+<!--    </a>-->
+<!--    <a href="/#/Immogen">-->
+<!--      <div class="container">-->
+<!--        <div class="blur"></div>-->
+<!--        <iframe src="/#/Immogen"></iframe>-->
+<!--      </div>-->
+<!--    </a>-->
 
-      <a href="/#/Gorthor">
-    <div class="container">
-      <iframe src="/#/Gorthor"/>
-    </div>
-    </a>
-<!--    <iframe src="/#/Frey"-->
-<!--            onload="var that=this;setTimeout(function() { that.style.opacity = 1 }, 500)"/>-->
-<!--    <iframe src="/#/Immogen"-->
-<!--            onload="var that=this;setTimeout(function() { that.style.opacity = 1 }, 500)"/>-->
-<!--    <iframe src="/#/Gorthor"-->
-<!--            onload="var that=this;setTimeout(function() { that.style.opacity = 1 }, 500)"/>-->
+<!--      <a href="/#/Gorthor">-->
+<!--    <div class="container">-->
+<!--      <iframe src="/#/Gorthor"/>-->
+<!--    </div>-->
+<!--    </a>-->
+
+    <div class="absolute-center">Welcome to the PF Board!</div>
   </q-page>
 </template>
 

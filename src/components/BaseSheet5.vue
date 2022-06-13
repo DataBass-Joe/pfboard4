@@ -122,10 +122,10 @@
         </div>
         <div>
           <q-item-section class="health col-shrink justify-around rounded-borders">
-            <q-btn
-              @click="healSpell()"
-              label="Heal"
-              size="sm"/>
+<!--            <q-btn-->
+<!--              @click="healSpell()"-->
+<!--              label="Heal"-->
+<!--              size="sm"/>-->
             <div class="q-gutter row no-wrap justify-around items-center">
               <q-btn
                 @click="damageTaken = 0"
@@ -280,6 +280,14 @@
                 class="special-attacks capitalize">
          {{ formatSpecial(attack) }}
             <span v-if="index !== character.specialAttacks.length - 1">, </span>
+          </div>
+        </div>
+        <div v-if="character.activeSpecialAbilities" id="activeSpecialAbilities" class="text-capitalize">
+          <b>Special Attacks </b>
+          <div v-for="(attack, index) in character.activeSpecialAbilities" :key="index"
+               class="special-attacks capitalize">
+            {{ formatSpecial(attack) }}
+            <span v-if="index !== character.activeSpecialAbilities.length - 1">, </span>
           </div>
         </div>
 
@@ -601,7 +609,7 @@ function formatList(myObj, myKeys) {
         } else {
           list += myObj[index];
 
-          if (index !== arrSize - 1) {
+          if (index !== arrSize - 1 && myObj[index] !== "") {
             list += ' ';
           }
         }
@@ -614,11 +622,11 @@ function formatList(myObj, myKeys) {
       if (typeof myObj[keys[index]] !== 'undefined') {
         if (typeof myObj[keys[index]] === 'object') {
           list += formatList(myObj[keys[index]]);
-          if (index !== size - 1) list += ' ';
+          if (index !== size - 1 && myObj[keys[index]] !== "") list += ' ';
         } else {
           list += myObj[keys[index]];
         }
-        if (index !== size - 1) list += ' ';
+        if (index !== size - 1 && myObj[keys[index]] !== "") list += ' ';
       }
     }
   }
@@ -817,7 +825,7 @@ function getRandomInt(min, max) {
 }
 
 function healSpell() {
-  damageTaken.value = Math.max(0, damageTaken.value - props.character.level * 10);
+  damageTaken.value = Math.max(0, damageTaken.value - props.character.charLevel * 10);
 }
 
 </script>

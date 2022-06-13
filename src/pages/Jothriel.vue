@@ -1,23 +1,23 @@
 <template>
   <span>
       <BaseSheet5
-        :character="jacob"
+        :character="jothriel"
       />
   </span>
 </template>
 
 <script setup>
 import BaseSheet5 from '/src/components/BaseSheet5.vue';
-import { useJacob } from "stores/character";
+import { useJothriel } from "stores/character";
 import { useMeta } from "quasar";
 import {reactive, ref} from "vue";
 
-const store = useJacob();
+const store = useJothriel();
 
-const jacob = store.jacob;
+const jothriel = store.jothriel;
 
 const metaData = reactive({
-  title: jacob.name,
+  title: jothriel.name,
 });
 useMeta(metaData);
 
