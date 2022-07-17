@@ -1,13 +1,13 @@
 <template>
   <span>
-      <BaseSheet4
+      <BaseSheet5
         :character="sareah"
       />
   </span>
 </template>
 
 <script setup>
-import BaseSheet4 from '/src/components/BaseSheet4.vue';
+import BaseSheet5 from '/src/components/BaseSheet5.vue';
 import { useSareah } from "stores/character";
 import { useMeta } from "quasar";
 import {reactive, ref} from "vue";

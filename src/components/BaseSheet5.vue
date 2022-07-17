@@ -91,6 +91,7 @@
               <b>Fort </b> <span id="fortitude" v-text="character.savingThrows.fortitude"/>
               <b>, Ref </b> <span id="reflex" v-text="character.savingThrows.reflex"/>
               <b>, Will </b> <span id="will" v-text="character.savingThrows.will"/>
+              <span v-if="character.willSpecial" id="willsp"> [{{character.willSpecial}}] </span>
             </div>
             <div>
 
@@ -218,6 +219,7 @@
               <span v-text="'d'"/>
               <span v-text="option.dieSize"/>
               <span v-text="formatBonus(option.damage)"/>
+              <span v-if="option.special" v-text="`+${option.special}`"/>
               <span v-if="option.critRange !== 20" v-text="`/${option.critRange}–20`"/>
               <span v-if="option.critMult && option.critMult !== 2" v-text="`/x${option.critMult}`"/>
               <span v-text="')'"/>
@@ -367,7 +369,13 @@
                         <tbody>
                         <tr v-for="(value, key, index) in character.skills.totalSkills" :key="index">
                           <td class="text-left">{{key}}</td>
-                          <td class="text-left">{{formatBonus(value)}}</td>
+                          <td v-if="typeof(value) !== 'object'" class="text-left">{{formatBonus((value))}}</td>
+                          <span v-else>
+                            <tr v-for="(kValue, kKey, kIndex) in character.skills.totalSkills.knowledge" :key="kIndex">
+                              <td class="text-left">{{kKey}}</td>
+                              <td class="text-left">{{formatBonus(kValue)}}</td>
+                            </tr>
+                        </span>
                         </tr>
                         </tbody>
                       </q-markup-table>
@@ -1029,6 +1037,8 @@ input[type="checkbox"] {
   cursor: pointer;
 }
 
+
+
 input[type="checkbox"]:before {
   content: "\e3ac";
   position: absolute;
@@ -1038,6 +1048,10 @@ input[type="checkbox"]:before {
 input[type="checkbox"]:checked:before {
     content: "\e3ac";
     position: absolute;
+}
+
+#willsp {
+  font-size: .75em;
 }
 
 

@@ -442,6 +442,9 @@ function meleeCalc(abilityMods, modifiers, charMelee, baseAtk, sizeModifier) {
       option.value.weaponGroup === "light"
         ? Math.max(tempMeleeDamage.value, tempDexDamage.value)
         : tempMeleeDamage.value;
+    if ((option.value.attackCount ?? 0) > 0) {
+      option.value.attackCount += (modifiers.value.hasteAttackCount ?? 0);
+    }
     if (!option.value.weapon) {
       option.value.attack -= (modifiers.value.weaponAttackRolls ?? 0);
       option.value.damage -= (modifiers.value.trueWeaponDamage ?? 0);
@@ -2912,11 +2915,8 @@ const sareah = computed(() => {
       },
     },
     {
-      name: "bluff trait (fill this later)",
+      name: "Fate's Favored",
       bonusType: "trait",
-      bonus: {
-        bluff: 1,
-      },
     },
   ]);
   const alignment = ref("NG");
@@ -2984,11 +2984,12 @@ const sareah = computed(() => {
         touchAC: 1,
       },
     },
-    "Headband of Vast Intellect +6": {
+    "Headband of Mental Prowess +6": {
       bonusType: "enhancement",
       cost: 0,
       bonus: {
         intelligence: 6,
+        charisma: 6,
       },
     },
     "Belt of Dex/Con +6": {
@@ -3054,9 +3055,32 @@ const sareah = computed(() => {
         intimidate: 2,
       },
     },
+    "Stone of Good Luck": {
+    bonusType: "luck",
+      cost: 20000,
+      bonus: {
+        saves: 2,
+        skills: 2,
+    },
+  },
+    "Numerology Cylinder": {
+      bonusType: "insight",
+      cost: 5000,
+      bonus: {
+        spellPenetrationCasterLevel: 2,
+      },
+    },
+    "Orange Prism Ioun Stone" : {
+      bonusType: "ioun",
+      cost: 30000,
+      bonus: {
+        casterLevel: 1,
+      },
+    }
+
   });
 
-  const charLevel = ref(14);
+  const charLevel = ref(15);
 
   const charClasses = ref([
     {
@@ -3099,12 +3123,12 @@ const sareah = computed(() => {
       castingStat: "intelligence",
       spells: {
         "7th": {
-          slots: 3,
-          prepared: ["plane shift"],
+          slots: 4,
+          prepared: ["plane shift", "chain lightning"],
         },
         "6th": {
-          slots: 5,
-          prepared: ["wither limb", "fey form II", "dispel magic, greater"],
+          slots: 6,
+          prepared: ["wither limb", "fey form II", "dispel magic, greater", "cone of cold", "suggestion, mass"],
         },
         "5th": {
           slots: 6,
@@ -3734,8 +3758,7 @@ const sareah = computed(() => {
         "flight",
         "gift of consumption",
         "retribution",
-        "agony",
-        "???",
+        "agony"
       ],
     },
     {
@@ -6190,7 +6213,7 @@ const jothriel = computed(() => {
     },
   });
 
-  const charLevel = ref(8);
+  const charLevel = ref(10);
 
   const charClasses = ref([
     {
@@ -6230,12 +6253,20 @@ const jothriel = computed(() => {
       casting: 'spontaneous',
       castingStat: 'charisma',
       spells: {
+        '4th': {
+          slots: 0,
+          prepared: [
+            'Greater Invisibility',
+            'Modify Memory',
+          ],
+        },
         '3rd': {
-          slots: 1,
+          slots: 2,
           prepared: [
             'Confusion',
             'Ectoplasmic Snare',
             'Major Image',
+            'Dispel Magic',
           ],
         },
         '2nd': {
@@ -6245,10 +6276,11 @@ const jothriel = computed(() => {
             'Heroism',
             'Invisibility',
             'Hold Person',
+            'Silence',
           ],
         },
         '1st': {
-          slots: 3,
+          slots: 4,
           prepared: [
             'Charm Person',
             'Grease',
@@ -6359,7 +6391,7 @@ const jothriel = computed(() => {
       ability: 'strength',
     },
     finesse: {
-      ranks: 0,
+      ranks: level.value - 5,
       ability: 'dexterity',
     },
     influence: {
@@ -6391,7 +6423,7 @@ const jothriel = computed(() => {
       ability: 'intelligence',
     },
     stealth: {
-      ranks: 0,
+      ranks: level.value - 3,
       ability: 'dexterity',
     },
     survival: {
@@ -6494,12 +6526,12 @@ const jothriel = computed(() => {
     abpAbilityScores: {
       bonusType: 'enhancement',
       bonus: {
-        strength: 2,
+        strength: 4,
         dexterity: 0,
         constitution: 0,
         intelligence: 0,
         wisdom: 0,
-        charisma: 2,
+        charisma: 4,
       },
     },
     abpResistance: {
@@ -6724,7 +6756,7 @@ const jothriel = computed(() => {
     bardicPerformance,
   };
 });
-export const useJothriel = defineStore("jacob", {
+export const useJothriel = defineStore("jothriel", {
   state: () => ({
     jothriel: jothriel.value,
   }),
@@ -6753,8 +6785,8 @@ const gorthor = computed(() => {
       name: 'Armored Scales',
       bonusType: 'naturalArmor',
       bonus: {
-        ac: 1,
-        ffAC: 1,
+        ac: 2,
+        ffAC: 2,
       },
     },
   ]);
@@ -6772,7 +6804,7 @@ const gorthor = computed(() => {
 
   const charMelee = ref([
     {
-      name: 'Handaxe',
+      name: 'Flaming Handaxe',
       weaponGroup: 'light',
       attackCount: 0,
       attackPenalty: 0,
@@ -6780,9 +6812,10 @@ const gorthor = computed(() => {
       dieSize: 6,
       critRange: 20,
       critMult: 3,
+      special: '1d6 fire',
     },
     {
-      name: 'TWF Handaxe',
+      name: 'TWF Flaming Handaxe',
       weaponGroup: 'light',
       attackCount: 1,
       iterativeAttackCount: 1,
@@ -6791,6 +6824,8 @@ const gorthor = computed(() => {
       dieSize: 6,
       critRange: 20,
       critMult: 3,
+      special: '1d6 fire',
+
     },
   ]);
   const charRanged = ref([
@@ -6866,7 +6901,7 @@ const gorthor = computed(() => {
     },
   });
 
-  const charLevel = ref(8);
+  const charLevel = ref(10);
 
   const charClasses = ref([
     {
@@ -6910,6 +6945,7 @@ const gorthor = computed(() => {
   );
 
   //DEFENSE
+  const willSpecial = ref("Advantage on Enchantment Effects")
 
   const defensiveAbilities = ref("");
   const dr = ref("");
@@ -6934,7 +6970,7 @@ const gorthor = computed(() => {
       pointBuy: 16,
     },
     dexterity: {
-      pointBuy: 15,
+      pointBuy: 17,
     },
     constitution: {
       pointBuy: 13,
@@ -6997,6 +7033,18 @@ const gorthor = computed(() => {
       bonus: {
         ac: 1,
         ffAC: 1,
+      },
+    },
+    'Greater Weapon Focus': {
+      bonusType: 'weaponFocus',
+      bonus: {
+        attackRolls: 2,
+      },
+    },
+    'Improved Initiative': {
+      bonusType: 'dodge',
+      bonus: {
+        initiative: 4,
       },
     },
 
@@ -7092,6 +7140,7 @@ const gorthor = computed(() => {
         ac: 1,
         touchAC: 1,
         attackCount: 1,
+        hasteAttackCount:1,
       },
     },
     {
@@ -7142,15 +7191,23 @@ const gorthor = computed(() => {
         weaponDamage: 2,
       },
     },
+    ninjaTraining: {
+      bonusType: "",
+      bonus: {
+        weaponAttackRolls: 2,
+        TrueWeaponDamage: 2,
+        will: 4
+      },
+    },
     abpAbilityScores: {
       bonusType: 'enhancement',
       bonus: {
-        strength: 2,
-        dexterity: 0,
+        strength: 0,
+        dexterity: 4,
         constitution: 0,
         intelligence: 0,
         wisdom: 0,
-        charisma: 2,
+        charisma: 4,
       },
     },
     abpResistance: {
@@ -7190,12 +7247,19 @@ const gorthor = computed(() => {
       },
     },
     levelUp: {
-      bonusType: 'inherent',
+      bonusType: 'levelUp',
       bonus: {
         constitution: 1,
         dexterity: 1,
       },
     },
+    inherent: {
+      bonusType: 'inherent',
+      bonus: {
+        strength: 2,
+        dexterity: 2,
+      }
+    }
   });
 
   const acBonuses = computed(() => acBonusesCalc(toggle, charMods, charGear, feats, traits, heritageTraits));
@@ -7310,7 +7374,10 @@ const gorthor = computed(() => {
 
   const specialAttacks = reactive([
     {
-      name: `sneak attack (+${Math.floor((level.value + 1) / 2)}d6 and +${Math.floor((level.value + 1) / 2) * 2} bleed and +1 Str/Dex Damage`,
+      name: `sneak attack (+${Math.floor((level.value + 1) / 2)+1}d6 and +${Math.floor((level.value + 1) / 4)} Str Damage`,
+    },
+    {
+      name: `Assassinate (DC ${ 10 + Math.floor((level.value) / 2) + abilityMods.value.charisma} Fortitude`,
     },
     {
       name: `Breath Weapon (1/day) (30-ft. line, +${Math.max(Math.floor(level.value / 2), 1) + abilityMods.value.charisma}, ${level.value}d6`,
@@ -7431,7 +7498,7 @@ const gorthor = computed(() => {
       name: 'Shadow Clone (1 Ki'
     },
     {
-      name: 'Vanishing Trick (1 Ki'
+      name: 'Invisible Blade (1 Ki'
     },
   ]);
 
@@ -7483,6 +7550,7 @@ const gorthor = computed(() => {
     attackCount,
     specialAttacks,
     activeSpecialAbilities,
+    willSpecial,
   };
 });
 export const useGorthor = defineStore("gorthor", {
@@ -7588,7 +7656,7 @@ const charGear = reactive({
   },
 });
 
-const charLevel = ref(8);
+const charLevel = ref(10);
 
 const charClasses = ref([
   {
@@ -7616,8 +7684,14 @@ const charClasses = ref([
     casting: 'spontaneous',
     castingStat: 'charisma',
     spells: {
-      '4th': {
+      '5th': {
         slots: 2,
+        prepared: [
+          'Sending',
+          'Teleport',
+        ],
+      },
+      '4th': {
         prepared: [
           'Dimension Door',
           'Phantasmal Killer',
@@ -7638,16 +7712,15 @@ const charClasses = ref([
       '1st': {
         prepared: [
           'Cause Fear',
-          'Shield',
-          'Armor of Agathys',
+          'Mount',
         ],
       },
       Cantrips: {
         prepared: [
-          'Eldritch Blast',
           'Mage Hand',
           'Message',
-          'Hex'
+          'Magic Missile',
+          'Endure Elements'
         ],
       },
 
@@ -7909,18 +7982,18 @@ const charMods = reactive({
   abpAbilityScores: {
     bonusType: 'enhancement',
     bonus: {
-      strength: 2,
+      strength: 4,
       dexterity: 0,
       constitution: 0,
       intelligence: 0,
       wisdom: 0,
-      charisma: 2,
+      charisma: 4,
     },
   },
   abpResistance: {
     bonusType: 'resistance',
     bonus: {
-      saves: 2,
+      saves: 3,
     },
   },
   abpNaturalArmor: {
@@ -7954,10 +8027,16 @@ const charMods = reactive({
     },
   },
   levelUp: {
-    bonusType: 'inherent',
+    bonusType: 'levelUp',
     bonus: {
       constitution: 1,
       dexterity: 1,
+    },
+  },
+  orcBloodline: {
+    bonusType: 'inherent',
+    bonus: {
+      strength: 2,
     },
   },
 });
@@ -8166,8 +8245,7 @@ return {
   specialAttacks,
   activeSpecialAbilities,
 };
-})
-;
+});
 export const useFrey = defineStore("frey", {
   state: () => ({
     frey: frey.value,
