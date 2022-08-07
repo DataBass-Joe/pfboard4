@@ -3080,7 +3080,7 @@ const sareah = computed(() => {
 
   });
 
-  const charLevel = ref(15);
+  const charLevel = ref(16);
 
   const charClasses = ref([
     {
@@ -3107,7 +3107,7 @@ const sareah = computed(() => {
         "use magic device",
       ],
       favored: {
-        hp: 4,
+        hp: 13, // 4 + (3*3 mythic)
         skill: 0,
         race: {
           "elf": charLevel.value - 4,
@@ -3122,9 +3122,13 @@ const sareah = computed(() => {
       casting: "spontaneous",
       castingStat: "intelligence",
       spells: {
+        "8th": {
+          slots: 3,
+          prepared: ["moment of prescience",],
+        },
         "7th": {
-          slots: 4,
-          prepared: ["plane shift", "chain lightning"],
+          slots: 5,
+          prepared: ["plane shift", "chain lightning", "heal"],
         },
         "6th": {
           slots: 6,
@@ -3168,7 +3172,7 @@ const sareah = computed(() => {
             "hold person",
             "web",
             "enthrall",
-            "limp lash",
+            "Protective Penumbra",
             "zone of truth",
             "glitterdust",
             "perceive cues",
@@ -3209,6 +3213,7 @@ const sareah = computed(() => {
         "5th": "mirage arcana",
         "6th": "mislead",
         "7th": "reverse gravity",
+        "8th": "antipathy",
       },
     },
   ]);
@@ -3525,7 +3530,13 @@ const sareah = computed(() => {
     levelUp: {
       bonusType: "",
       bonus: {
-        intelligence: 3,
+        intelligence: 4,
+      },
+    },
+    mythic: {
+      bonusType: "mythic",
+      bonus: {
+        intelligence: 2,
       },
     },
     Wish: {
@@ -3758,7 +3769,8 @@ const sareah = computed(() => {
         "flight",
         "gift of consumption",
         "retribution",
-        "agony"
+        "agony",
+        "pariah"
       ],
     },
     {

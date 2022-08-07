@@ -359,7 +359,7 @@
                       <q-markup-table dense
                                       flat
                                       class="parchment"
-                                      style="max-width: 50%; min-width: 25px;">
+                                      style=" min-width: 350px; max-width: 50%;">
                         <thead>
                         <tr>
                           <th>Skill Name</th>
