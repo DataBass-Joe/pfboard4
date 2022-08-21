@@ -1,13 +1,13 @@
 <template>
   <span>
-      <BaseSheet5
+      <BaseSheet6
         :character="sareah"
       />
   </span>
 </template>
 
 <script setup>
-import BaseSheet5 from '/src/components/BaseSheet5.vue';
+import BaseSheet6 from '/src/components/BaseSheet6.vue';
 import { useSareah } from "stores/character";
 import { useMeta } from "quasar";
 import {reactive, ref} from "vue";
@@ -20,7 +20,6 @@ const metaData = reactive({
   title: sareah.name,
 });
 useMeta(metaData);
-
 
 
 </script>

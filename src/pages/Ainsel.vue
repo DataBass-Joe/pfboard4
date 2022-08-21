@@ -1,13 +1,13 @@
 <template>
   <span>
-      <BaseSheet6
+      <BaseSheet5
         :character="ainsel"
       />
   </span>
 </template>
 
 <script setup>
-import BaseSheet6 from '/src/components/BaseSheet6.vue';
+import BaseSheet5 from '/src/components/BaseSheet5.vue';
 import { useAinsel } from "stores/character";
 import { useMeta } from "quasar";
 import {reactive, ref} from "vue";

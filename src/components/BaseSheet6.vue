@@ -91,6 +91,7 @@
               <b>Fort </b> <span id="fortitude" v-text="character.savingThrows.fortitude"/>
               <b>, Ref </b> <span id="reflex" v-text="character.savingThrows.reflex"/>
               <b>, Will </b> <span id="will" v-text="character.savingThrows.will"/>
+              <span v-if="character.willSpecial" id="willsp"> [{{ character.willSpecial }}] </span>
             </div>
             <div>
 
@@ -101,7 +102,7 @@
                    (Stealth {{ formatBonus(character.skills.totalSkills.stealth + 20) }})
                             </span>
               </div>
-              <div id="dr" v-if="character.dr">
+              <div id="dr" class="text-capitalize" v-if="character.dr">
                 <b>DR </b>
                 <span v-for="(drValue, drType, index) in character.dr" :key="index">
               {{ drValue }}/{{ drType }}
@@ -122,10 +123,10 @@
         </div>
         <div>
           <q-item-section class="health col-shrink justify-around rounded-borders">
-            <q-btn
-              @click="healSpell()"
-              label="Heal"
-              size="sm"/>
+            <!--            <q-btn-->
+            <!--              @click="healSpell()"-->
+            <!--              label="Heal"-->
+            <!--              size="sm"/>-->
             <div class="q-gutter row no-wrap justify-around items-center">
               <q-btn
                 @click="damageTaken = 0"
@@ -199,8 +200,9 @@
                   + (Math.max(0,( n - option.attackCount - character.attackCount + 2)) * -5)
                   )"
                 />
-                <span v-if="option.iterativeAttackCount > 0 && (n - option.attackCount - character.attackCount + 2) === 1"
-                      v-text="'/' + formatBonus(option.attack + (option.attackPenalty ?? 0)
+                <span
+                  v-if="option.iterativeAttackCount > 0 && (n - option.attackCount - character.attackCount + 2) === 1"
+                  v-text="'/' + formatBonus(option.attack + (option.attackPenalty ?? 0)
                   + (Math.max(0,( n - option.attackCount - character.attackCount + 2)) * -5)
                   )"/>
                 <span
@@ -218,6 +220,7 @@
               <span v-text="'d'"/>
               <span v-text="option.dieSize"/>
               <span v-text="formatBonus(option.damage)"/>
+              <span v-if="option.special" v-text="`+${option.special}`"/>
               <span v-if="option.critRange !== 20" v-text="`/${option.critRange}–20`"/>
               <span v-if="option.critMult && option.critMult !== 2" v-text="`/x${option.critMult}`"/>
               <span v-text="')'"/>
@@ -225,7 +228,7 @@
               <span v-if="option.critMax"
                     v-text="` (+${option.critMult * ((option.dieCount * option.dieSize) + option.damage)} Max Crit)`"/>
             </span>
-                        <span v-if="index !== character.ranged.length - 1">, </span>
+            <span v-if="index !== character.ranged.length - 1">, </span>
 
           </div>
         </div>
@@ -277,9 +280,33 @@
         <div v-if="character.specialAttacks" id="specialAttacks" class="text-capitalize">
           <b>Special Attacks </b>
           <div v-for="(attack, index) in character.specialAttacks" :key="index"
-                class="special-attacks capitalize">
-         {{ formatSpecial(attack) }}
-            <span v-if="index !== character.specialAttacks.length - 1">, </span>
+               class="special-attacks">
+
+            <span v-if="attack.name.toLowerCase().includes('witch hexes') || attack.name.toLowerCase().includes('mythic')"
+                  class="witch-hexes">
+                          {{ attack.name }}
+          <span v-for="(value, hIndex) in attack.hexes" :key="hIndex"
+                class="">
+            <span class="feat" v-text="value" @click="abilityRef = value;"/>
+            <span v-if="hIndex !== attack.hexes.length - 1">, </span>
+          </span>
+            </span>
+                          <span v-if="attack.name.toLowerCase().includes('conduit surge')"
+                                class="conduit-surge">
+
+            <span class="feat" v-text="attack.name" @click="abilityRef = 'conduit surge';"/>
+
+
+
+            </span>
+          </div>
+        </div>
+        <div v-if="character.activeSpecialAbilities" id="activeSpecialAbilities" class="text-capitalize">
+          <b>Special Attacks </b>
+          <div v-for="(attack, index) in character.activeSpecialAbilities" :key="index"
+               class="special-attacks capitalize">
+            {{ formatSpecial(attack) }}
+            <span v-if="index !== character.activeSpecialAbilities.length - 1">, </span>
           </div>
         </div>
 
@@ -300,6 +327,7 @@
                :key="index">
             <SpellList v-bind:caster="caster"
                        v-bind:castingMod="character.abilityMods[caster.castingStat]"
+                       v-bind:spellDCMod="character.spellDCMod ?? 0"
                        @spell-submit="loadSpell"/>
           </div>
 
@@ -345,11 +373,36 @@
           <b>CMB </b><span id="cmb" v-text="formatBonus(character.cmb)"/>;
           <b>CMD </b><span id="cmd" v-text="formatBonus(character.cmd)"/>;
         </div>
-            <span class="text-capitalize" style="text-shadow: none;">
+        <div id="feats" class="text-capitalize">
+          <b>Feats: </b>
+          <span v-for="(name, value, index) in character.feats" :key="index"
+                class="">
+            <span class="feat" v-text="value" @click="featRef = value;"/>
+            <span v-if="index !== Object.keys(character.feats).length - 1">, </span>
+          </span>
+
+
+        </div>
+        <br>
+        <div id="charGear" class="text-capitalize">
+          <b>Gear: </b>
+          <span v-for="(value, name, index) in character.charGear" :key="index"
+                class="">
+            <span v-if="!value.noShow ?? true">
+              <span v-if="value.searchText" class="feat" v-text="name" @click="charGearRef = value.searchText;"/>
+
+              <span v-else v-text="name"/>
+              <span v-if="index !== Object.keys(character.charGear).length - 1">, </span>
+            </span>
+          </span>
+        </div>
+        <br>
+
+        <span class="text-capitalize" style="text-shadow: none;">
                       <q-markup-table dense
                                       flat
                                       class="parchment"
-                                      style="max-width: 50%; min-width: 25px;">
+                                      style=" min-width: 350px; max-width: 50%;">
                         <thead>
                         <tr>
                           <th>Skill Name</th>
@@ -358,12 +411,20 @@
                         </thead>
                         <tbody>
                         <tr v-for="(value, key, index) in character.skills.totalSkills" :key="index">
-                          <td class="text-left">{{key}}</td>
-                          <td class="text-left">{{formatBonus(value)}}</td>
-                        </tr>
-                        </tbody>
-                      </q-markup-table>
-                </span>
+                          <td class="text-left">{{ key }}</td>
+                          <td v-if="typeof(value) !== 'object'" class="text-left">{{ formatBonus((value)) }}</td>
+                          <td v-else>
+                          <span>
+                            <tr v-for="(kValue, kKey, kIndex) in character.skills.totalSkills.knowledge" :key="kIndex">
+                              <td class="text-left">{{ kKey }}</td>
+                              <td class="text-left">{{ formatBonus(kValue) }}</td>
+                            </tr>
+                          </span></td>
+        </tr>
+        </tbody>
+        </q-markup-table>
+        </span>
+
 
         <div id="languages" v-text="character.languages"></div>
         <div id="sq" v-text="character.specialQualities"></div>
@@ -532,6 +593,35 @@
       </div>
     </q-dialog>
 
+    <q-dialog v-model="featDialog">
+      <div class="parchment">
+        <q-toolbar class="bg-primary text-white">
+          <q-toolbar-title class="text-capitalize">{{ featRef }}</q-toolbar-title>
+          <q-btn flat round dense icon="close" v-close-popup/>
+        </q-toolbar>
+        <Feat :feat="featRef"/>
+      </div>
+    </q-dialog>
+
+    <q-dialog v-model="abilityDialog">
+      <div class="parchment">
+        <q-toolbar class="bg-primary text-white">
+          <q-toolbar-title class="text-capitalize">{{ abilityRef }}</q-toolbar-title>
+          <q-btn flat round dense icon="close" v-close-popup/>
+        </q-toolbar>
+        <Ability :ability="abilityRef"/>
+      </div>
+    </q-dialog>
+
+    <q-dialog v-model="charGearDialog">
+      <div class="parchment">
+        <q-toolbar class="bg-primary text-white">
+          <q-toolbar-title class="text-capitalize">{{ charGearRef }}</q-toolbar-title>
+          <q-btn flat round dense icon="close" v-close-popup/>
+        </q-toolbar>
+        <CharGear :charGear="charGearRef"/>
+      </div>
+    </q-dialog>
 
   </q-page>
 </template>
@@ -544,6 +634,9 @@ import SpellList from 'src/components/SpellList.vue';
 import Spell from 'src/components/Spell.vue';
 import {api} from 'boot/axios';
 import {useQuasar} from 'quasar';
+import Feat from 'src/components/Feat.vue';
+import Ability from 'src/components/Ability.vue';
+import CharGear from 'components/CharGear.vue';
 
 const $q = useQuasar();
 const props = defineProps({
@@ -601,7 +694,7 @@ function formatList(myObj, myKeys) {
         } else {
           list += myObj[index];
 
-          if (index !== arrSize - 1) {
+          if (index !== arrSize - 1 && myObj[index] !== "") {
             list += ' ';
           }
         }
@@ -614,11 +707,11 @@ function formatList(myObj, myKeys) {
       if (typeof myObj[keys[index]] !== 'undefined') {
         if (typeof myObj[keys[index]] === 'object') {
           list += formatList(myObj[keys[index]]);
-          if (index !== size - 1) list += ' ';
+          if (index !== size - 1 && myObj[keys[index]] !== "") list += ' ';
         } else {
           list += myObj[keys[index]];
         }
-        if (index !== size - 1) list += ' ';
+        if (index !== size - 1 && myObj[keys[index]] !== "") list += ' ';
       }
     }
   }
@@ -669,6 +762,10 @@ function formatArray(myArray) {
 
   return list;
 }
+
+const abilityRef = ref(null);
+const featRef = ref(null);
+const charGearRef = ref(null);
 
 const spellRef = ref(null);
 
@@ -801,7 +898,25 @@ function moveFab(ev) {
   }
 }
 
+const charGearDialog = computed({
+  get: () => charGearRef.value !== null,
+  set: () => {
+    charGearRef.value = null;
+  },
+});
 
+const abilityDialog = computed({
+  get: () => abilityRef.value !== null,
+  set: () => {
+    abilityRef.value = null;
+  },
+});
+const featDialog = computed({
+  get: () => featRef.value !== null,
+  set: () => {
+    featRef.value = null;
+  },
+});
 const spellDialog = computed({
   get: () => spellRef.value !== null,
   set: () => {
@@ -817,7 +932,7 @@ function getRandomInt(min, max) {
 }
 
 function healSpell() {
-  damageTaken.value = Math.max(0, damageTaken.value - props.character.level * 10);
+  damageTaken.value = Math.max(0, damageTaken.value - props.character.charLevel * 10);
 }
 
 </script>
@@ -1021,6 +1136,7 @@ input[type="checkbox"] {
   cursor: pointer;
 }
 
+
 input[type="checkbox"]:before {
   content: "\e3ac";
   position: absolute;
@@ -1028,8 +1144,26 @@ input[type="checkbox"]:before {
 }
 
 input[type="checkbox"]:checked:before {
-    content: "\e3ac";
-    position: absolute;
+  content: "\e3ac";
+  position: absolute;
+}
+
+#willsp {
+  font-size: .75em;
+}
+
+.feat {
+  cursor: pointer;
+  border-bottom: 2px solid #fff3;
+}
+
+.feat:hover {
+  border-bottom-color: #fff9;
+}
+
+.active {
+  border-bottom-color: #fff9;
+  font-weight: bold;
 }
 
 

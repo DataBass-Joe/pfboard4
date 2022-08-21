@@ -23,7 +23,7 @@
                         <input type="checkbox" v-for="index in
             Array(spellList.slots)"
                                v-bind:key="index"/>
-                          <span v-text="` (DC ${10 + castingMod + spellLevel[level]})`"/>
+                          <span v-text="` (DC ${10 + castingMod + spellLevel[level] + spellDCMod})`"/>
               <span v-text="` (+${castingMod + spellLevel[level]})`"/>
           </span>
 
@@ -36,7 +36,7 @@
               <span v-if="level !== 'Cantrips' && level !== 'Orisons'">
               ({{ spellList.slots + Math.floor((castingMod - spellLevel[level]) / 4 + 1) }}/day)
             </span>
-              <span v-text="` (DC ${10 + castingMod + spellLevel[level]})`"/>
+              <span v-text="` (DC ${10 + castingMod + spellLevel[level] + spellDCMod})`"/>
               <span v-text="` (+${castingMod + spellLevel[level]})`"/>
             </span>
 
@@ -135,6 +135,7 @@ const toggleKey = ref(true);
 const props = defineProps({
   caster: Object,
   castingMod: Number,
+  spellDCMod: Number,
 });
 
 const emit = defineEmits(['spellSubmit']);

@@ -315,7 +315,7 @@ function acCalc(abilityMods, modifiers, sizeModifier) {
   };
 }
 
-function maxHPCalc(abilityMods, modifiers, charClasses, solo, level) {
+function maxHPCalc(abilityMods, modifiers, charClasses, solo, level, mythicTier = 0, mythicHitDie = 0) {
   let hitPoints = 0;
 
   let maxHitDie = 0;
@@ -341,6 +341,8 @@ function maxHPCalc(abilityMods, modifiers, charClasses, solo, level) {
 
 
   });
+
+  hitPoints += mythicTier * mythicHitDie
 
 
   hitPoints += level.value * abilityMods.value.constitution;
@@ -437,14 +439,13 @@ function meleeCalc(abilityMods, modifiers, charMelee, baseAtk, sizeModifier) {
     Object.keys(meleeOption).forEach((meleeAttr) => {
       option.value[meleeAttr] = meleeOption[meleeAttr];
     });
+    option.value.dieCount += (modifiers.value.meleeDieCount ?? 0);
     option.value.attack += tempMeleeAttack.value;
     option.value.damage +=
       option.value.weaponGroup === "light"
         ? Math.max(tempMeleeDamage.value, tempDexDamage.value)
         : tempMeleeDamage.value;
-    if ((option.value.attackCount ?? 0) > 0) {
       option.value.attackCount += (modifiers.value.hasteAttackCount ?? 0);
-    }
     if (!option.value.weapon) {
       option.value.attack -= (modifiers.value.weaponAttackRolls ?? 0);
       option.value.damage -= (modifiers.value.trueWeaponDamage ?? 0);
@@ -489,6 +490,8 @@ function rangedCalc(abilityMods, modifiers, charRanged, baseAtk, sizeModifier) {
 
     option.value.attack += tempRangedAttack.value;
     option.value.damage += tempRangedDamage.value;
+    option.value.attackCount += (modifiers.value.hasteAttackCount ?? 0);
+
 
     if (!option.value.weapon) {
       option.value.attack -= (modifiers.value.weaponAttackRolls ?? 0);
@@ -2968,39 +2971,56 @@ const sareah = computed(() => {
   ]);
 
   const charGear = reactive({
-    "Cracked Pale Green Prism": {
-      bonusType: "competence bonus",
-      cost: 4000,
-      bonus: {
-        saves: 1,
-      },
+    "Ring of Evasion":{
+      searchText: "ring of evasion",
     },
-    "Dusty Rose Prism Ioun Stone": {
-      bonusType: "insight",
-      cost: 5000,
-      bonus: {
-        ac: 1,
-        ffAC: 1,
-        touchAC: 1,
-      },
+    "Belt of Stoneskin":{
+      searchText: "Belt of Stoneskin",
     },
-    "Headband of Mental Prowess +6": {
+    "Cloak of Blur":{
+      searchText: "Cloak of displacement*minor",
+    },
+    "Staff of Mage's Magnificent Mansion":{
+      searchText: "",
+    },
+    "ring of counterspells":{
+      searchText: "ring of counterspells",
+    },
+    "rod of abrupt hexes":{
+    searchText: "rod of abrupt hexes",
+    },
+    "rod of voracious hexes":{
+      searchText: "rod of voracious hexes",
+    },
+    "Quicken Rod (lesser and normal)":{
+      searchText: "quicken metamagic rod",
+    },
+    "circlet of mindsight":{
+      searchText: "circlet of mindsight",
+    },
+
+    "Headband Of Mental Superiority +6": {
+      searchText: "Headband Of Mental Superiority *6",
       bonusType: "enhancement",
       cost: 0,
       bonus: {
         intelligence: 6,
+        wisdom: 6,
         charisma: 6,
       },
     },
-    "Belt of Dex/Con +6": {
+    "Belt Of Physical Perfection +6": {
+      searchText: "Belt Of Physical Perfection *6",
       bonusType: "enhancement",
       cost: 0,
       bonus: {
+        strength: 6,
         dexterity: 6,
         constitution: 6,
       },
     },
     "Robe of the Archmagi": {
+      searchText: "Robe Of The Archmagi",
       bonusType: "resistance",
       cost: 88500,
       bonus: {
@@ -3012,6 +3032,8 @@ const sareah = computed(() => {
       },
     },
     "Robe of the Archmagi armor": {
+      searchText: "",
+      noShow: true,
       bonusType: "armor",
       cost: 88500,
       bonus: {
@@ -3020,6 +3042,7 @@ const sareah = computed(() => {
       },
     },
     "Mythril Caster's Shield +5": {
+      searchText: "Caster's Shield, Greater",
       bonusType: "shield",
       cost: 26000,
       bonus: {
@@ -3028,6 +3051,7 @@ const sareah = computed(() => {
       },
     },
     "Ring of Protection +5": {
+      searchText: "Ring of Protection *5",
       bonusType: "deflection",
       cost: 2000,
       bonus: {
@@ -3036,27 +3060,23 @@ const sareah = computed(() => {
         touchAC: 5,
       },
     },
-    "Cracked Dusty Rose Prism Ioun Stone": {
-      bonusType: "insight",
-      cost: 500,
-      bonus: {
-        initiative: 1,
-      },
-    },
     "Masterwork Tools (Bluff)": {
+      searchText: "",
       bonusType: "circumstance",
       bonus: {
         bluff: 2,
       },
     },
-    "Blouse, Cackling Hag’s": {
+    "Cackling Hag's Blouse": {
+      searchText: "Cackling Hag's Blouse",
       bonusType: "competence",
       bonus: {
         intimidate: 2,
       },
     },
-    "Stone of Good Luck": {
-    bonusType: "luck",
+    "Luckstone": {
+      searchText: "luckstone",
+      bonusType: "luck",
       cost: 20000,
       bonus: {
         saves: 2,
@@ -3064,6 +3084,7 @@ const sareah = computed(() => {
     },
   },
     "Numerology Cylinder": {
+      searchText: "",
       bonusType: "insight",
       cost: 5000,
       bonus: {
@@ -3071,14 +3092,46 @@ const sareah = computed(() => {
       },
     },
     "Orange Prism Ioun Stone" : {
+      searchText: "orange prism ioun stone",
       bonusType: "ioun",
       cost: 30000,
       bonus: {
         casterLevel: 1,
       },
-    }
+    },
+    "Cracked Pale Green Prism Ioun Stone": {
+      searchText: "pale green prism ioun stone",
+      bonusType: "competence bonus",
+      cost: 4000,
+      bonus: {
+        saves: 1,
+      },
+    },
+    "Dusty Rose Prism Ioun Stone": {
+      searchText: "Dusty Rose Prism Ioun Stone",
+      bonusType: "insight",
+      cost: 5000,
+      bonus: {
+        ac: 1,
+        ffAC: 1,
+        touchAC: 1,
+      },
+    },
+    "Cracked Dusty Rose Prism Ioun Stone": {
+      searchText: "pale green prism ioun stone",
+      bonusType: "insight",
+      cost: 500,
+      bonus: {
+        initiative: 1,
+      },
+    },
 
   });
+
+  const mythic = reactive({
+    mythicTier: 4,
+    mythicHitDie: 3,
+  })
 
   const charLevel = ref(16);
 
@@ -3107,7 +3160,7 @@ const sareah = computed(() => {
         "use magic device",
       ],
       favored: {
-        hp: 13, // 4 + (3*3 mythic)
+        hp: 4,
         skill: 0,
         race: {
           "elf": charLevel.value - 4,
@@ -3231,9 +3284,11 @@ const sareah = computed(() => {
   //DEFENSE
 
   const defensiveAbilities = ref("");
-  const dr = ref("");
+  const dr = ref({
+    "Adamantine":10,
+  });
   const resist = ref("");
-  const immune = ref("sleep");
+  const immune = ref("Sleep");
   const sr = ref(0);
   const weaknesses = ref("");
   const saveAbilityScore = reactive({
@@ -3299,6 +3354,20 @@ const sareah = computed(() => {
         spellPenetrationCasterLevel: 2,
       },
     },
+    "Noble Spell Resistance": {
+      bonusType: "resistance",
+      bonus: {
+        spellResistance: 11 + level.value,
+      },
+    },
+    "witch knife":{
+        bonusType: "",
+      type: "mythic",
+        bonus: {
+          spellDCMod: 1,
+        },
+
+    }
     // "Spell Chain": {},
   });
   const skillPoints = reactive({
@@ -3360,31 +3429,31 @@ const sareah = computed(() => {
         ability: "intelligence",
       },
       dungeoneering: {
-        ranks: 0,
+        ranks: level.value,
         ability: "intelligence",
       },
       engineering: {
-        ranks: 1,
+        ranks: level.value,
         ability: "intelligence",
       },
       geography: {
-        ranks: 1,
+        ranks: level.value,
         ability: "intelligence",
       },
       history: {
-        ranks: 1,
+        ranks: level.value,
         ability: "intelligence",
       },
       local: {
-        ranks: 1,
+        ranks: level.value,
         ability: "intelligence",
       },
       nature: {
-        ranks: 1,
+        ranks: level.value,
         ability: "intelligence",
       },
       nobility: {
-        ranks: 1,
+        ranks: level.value,
         ability: "intelligence",
       },
       planes: {
@@ -3392,7 +3461,7 @@ const sareah = computed(() => {
         ability: "intelligence",
       },
       religion: {
-        ranks: 1,
+        ranks: level.value,
         ability: "intelligence",
       },
     },
@@ -3536,14 +3605,18 @@ const sareah = computed(() => {
     mythic: {
       bonusType: "mythic",
       bonus: {
-        intelligence: 2,
+        intelligence: 4,
       },
     },
     Wish: {
       bonusType: "inherent",
       cost: 0,
       bonus: {
-        intelligence: 1,
+        intelligence: 5,
+        strength: 1,
+        dexterity: 1,
+        wisdom: 1,
+        charisma: 1,
       },
     },
   });
@@ -3557,7 +3630,7 @@ const sareah = computed(() => {
       + (modifiers.value.casterLevel ?? 0)
       + (modifiers.value.spellPenetrationCasterLevel ?? 0);
   });
-  sr.value += modifiers.value.spellResistance ?? 0;
+  sr.value += Math.max(modifiers.value.spellResistance ?? 0, sr.value);
 
   const sizeModifier = computed(() => {
     let tempSize = sizeMod.value;
@@ -3583,68 +3656,13 @@ const sareah = computed(() => {
 
   // DEFENSE
   const ac = computed(() => acCalc(abilityMods, modifiers, sizeModifier));
-  const maxHP = computed(() => maxHPCalc(abilityMods, modifiers, charClasses, solo, level));
+  const maxHP = computed(() => maxHPCalc(abilityMods, modifiers, charClasses, solo, level, mythic.mythicTier, mythic.mythicHitDie));
   const savingThrows = computed(() => savingThrowsCalc(abilityMods, modifiers, saveAbilityScore, charClasses, level));
 
   // OFFENSE
   const melee = computed(() => meleeCalc(abilityMods, modifiers, charMelee, baseAtk, sizeModifier));
   const ranged = computed(() => rangedCalc(abilityMods, modifiers, charRanged, baseAtk, sizeModifier));
 
-  const featDescriptions = ref([
-    {
-      name: "Robe of the Archmagi",
-      type: "",
-      header: "Robe of the Archmagi",
-      description: [
-        "+5 armor bonus to AC",
-        "Spell resistance 19 (see Archmage's Vestments)",
-        "+5 resistance bonus on all saving throws",
-        "+2 enhancement bonus on caster level checks made to overcome spell resistance"
-      ],
-    },
-    {
-      name: "Mithral Caster's Shield +5",
-      type: "",
-      header: "Mithral Caster's Shield +5",
-      description: [
-        "This +5 Mithral light shield has a leather strip on the back on which a spellcaster can scribe a single spell as on a scroll. A spell so scribed requires half the normal cost in raw materials.",
-        "The strip cannot accommodate spells of higher than 5th level. The strip is reusable.",
-        "The shield is used each morning to cast an Empowered Greater False Life (EGFL) on Sareah"
-      ],
-    },
-    {
-      name: "Archmage's Vestments",
-      type: "",
-      header: "Archmage's Vestments",
-      description: [
-        "Consisting of everything a truly legendary wizard might need to overcome his rivals, the Archmage’s Vestments enhance the wearer’s spellcasting abilities.",
-        "Two-Item Benefit: While you are wearing or wielding at least two pieces of this set, your caster level for all arcane spellcasting classes you have levels in increases by 1.",
-        "Three-Item Benefit: While you are wearing or wielding at least three pieces of this set, you gain one additional 3rd-level spell slot for one arcane spellcasting class you have levels in.",
-        "Four-Item Benefit: While you are wearing or wielding at least four pieces of this set, you gain one additional 4th-level spell slot for one arcane spellcasting class you have levels in.",
-        "NOT YET AVAILABLE (Five-Item Benefit: While you are wearing and wielding all five pieces of this set, you gain one additional 5th-level spell slot for one arcane spellcasting class you have levels in.)"
-      ],
-    },
-    {
-      name: "Ring of Evasion",
-      type: "",
-      header: "Ring of Evasion",
-      description: [
-        "This ring continually grants the wearer the ability to avoid damage as if she had evasion. Whenever she makes a Reflex saving throw to determine whether she takes half damage, a successful save results in no damage."
-      ],
-    },
-    {
-      name: "Circlet of Mindsight",
-      type: "",
-      header: "Circlet of Mindsight",
-      description: [
-        "This elaborate circlet of gold-and-platinum filigree bears tiny gems in settings that look disturbingly like human eyes.",
-        "When worn, the circlet lets the wearer sense the presence of other thinking creatures in her immediate area",
-        "The wearer gains the benefits of blindsense 30 feet, but only against creatures with an Intelligence score that are susceptible to mind-affecting effects.",
-        "Undead, constructs, and mindless creatures like most oozes and vermin cannot be perceived when using the circlet, nor can creatures under the effects of mind blank or a ring of mind shielding.",
-        "The circlet does not interfere with the wearer’s ability to see normally. If the wearer has blindsense or blindsight, he is able to differentiate creatures detected with those senses from creatures detected with the circlet of mindsight."
-      ],
-    },
-  ]);
   const heroPointAbilities = ref("");
   const mythicAbilities = ref("");
 
@@ -3652,111 +3670,8 @@ const sareah = computed(() => {
     () => 10 + Math.floor(level.value / 2) + abilityMods.value.intelligence
   );
 
-  const specialAbilities = ref([
-    {
-      name: "Cackling Hag’s Blouse",
-      type: "",
-      header: "Cackling Hag’s Blouse",
-      description: [
-        "This loose-fitting blouse is adorned with grotesque fetishes and trophies, granting the wearer a +2 competence bonus on Intimidate checks.",
-        "If the wearer is a witch, she gains the cackle hex. If the wearer already has the cackle hex, twice per day she can use her cackle ability as a swift action instead of a move action."
-      ],
-    },
-    {
-      name: "Metamagic Rod, Quicken",
-      type: "",
-      header: "Metamagic Rod, Quicken",
-      description: [
-        "The wielder can cast up to three spells (up to 6th level) per day that are quickened as though using the Quicken Spell feat."
-      ],
-    },
-    {
-      name: "Lesser Metamagic Rod, Quicken",
-      type: "",
-      header: "Lesser Metamagic Rod, Quicken",
-      description: [
-        "The wielder can cast up to three spells (up to 3rd level) per day that are quickened as though using the Quicken Spell feat."
-      ],
-    },
-    {
-      name: "Rod of Grasping Hexes",
-      type: "",
-      header: "Rod of Grasping Hexes",
-      description: [
-        "This rod is crafted from a gnarled branch covered in sharp thorns.",
-        "Three times per day when a wielder of this rod uses a hex (but not an advanced hex or grand hex), she can use this rod’s power to double the range of the hex, so long as the hex has a range measured in feet."
-      ],
-    },
-    {
-      name: "Rod of Abrupt Hexes",
-      type: "",
-      header: "Rod of Abrupt Hexes",
-      description: [
-        "This rod is crafted from a gnarled branch covered in sharp thorns.",
-        "Three times per day when a wielder of this rod uses a hex (but not an advanced hex or grand hex), she can use this rod’s power to activate the hex as swift action rather than a standard action.",
-      ],
-    },
-    {
-      name: "Metamagic Rod, Empower",
-      type: "",
-      header: "Metamagic Rod, Empower",
-      description: [
-        "The wielder can cast up to three spells (up to 6th level) per day that are empowered as though using the Empower Spell feat.",
-        "One of these charges are use with the Caster's shield each morning to cast an Empowered Greater False Life (EGFL) on Sareah"
-      ],
-    },
-    {
-      name: "Ring of Counterspells",
-      type: "",
-      header: "Ring of Counterspells",
-      description: [
-        "Upon first examination, this ring seems to be a ring of spell storing. However, while it allows a single spell of 1st through 6th level to be cast into it, that spell cannot be cast out of the ring again.",
-        "Instead, should that spell ever be cast upon the wearer, the spell is immediately countered, as a counterspell action, requiring no action (or even knowledge) on the wearer’s part.",
-        "Once so used, the spell cast within the ring is gone. A new spell (or the same one as before) may be placed into it again.",
-      ],
-    },
-    {
-      name: "Conduit Surge",
-      type: "",
-      header: `Conduit Surge (Su) (${3 + abilityMods.value.charisma}/day)`,
-      description: [
-        "A ley line guardian is adept at channeling energy from ley lines to enhance her own spells.",
-        "As a swift action, she can increase her effective caster level for the next spell she casts in that round by 1d4 levels.",
-        "After performing a conduit surge, the ley line guardian must succeed at a Fortitude save (DC = 10 + level of spell cast + number of additional caster levels granted) or become staggered for a number of minutes equal to the level of the spell cast.",
-        "She can use this ability a number of times per day equal to 3 + her Charisma modifier.",
-      ],
-    },
-    {
-      name: "Cackle",
-      type: "Su",
-      header: "Cackle (Su)",
-      description: [
-        "A witch can cackle madly as a move action.",
-        "Any creature that is within 30 feet that is under the effects of an agony hex, charm hex, evil eye hex, fortune hex, or misfortune hex caused by the witch has the duration of that hex extended by 1 round."
-      ],
-    },
-    {
-      name: "Misfortune",
-      type: "",
-      header: "Misfortune (Su)",
-      description: [
-        "The witch can cause a creature within 30 feet to suffer grave misfortune for 1 round.",
-        "Anytime the creature makes an ability check, attack roll, saving throw, or skill check, it must roll twice and take the worse result. A Will save negates this hex.",
-        " At 8th level and 16th level, the duration of this hex is extended by 1 round.",
-        "This hex affects all rolls the target must make while it lasts.",
-        "Whether or not the save is successful, a creature cannot be the target of this hex again for 1 day."
-      ],
-    },
-    // {
-    //   name: "Cackling",
-    //   type: "",
-    //   header: "Cackling",
-    //   description: [
-    //     ""
-    //   ],
-    // },
+  const spellDCMod = ref(modifiers.value.spellDCMod ?? 0);
 
-  ]);
 
   const specialAttacks = reactive([
     {
@@ -3774,8 +3689,20 @@ const sareah = computed(() => {
       ],
     },
     {
-      name: "Conduit Surge (1d4)",
-      usesPerDay: 3 + abilityMods.value.charisma,
+      name: `Conduit Surge (1d4) (${3 + abilityMods.value.charisma}/day)`,
+    },
+    {
+      name: `Mythic Abilities (${3 + (mythic.mythicTier * 2)})` ,
+      hexes: [
+        "wild arcana",
+        "throw spell",
+        "mythic spellcasting",
+        "eldritch breach",
+        "mythic hexes",
+        "infectious spell",
+        // "mythic accursed hex",
+        // "mythic witch knife",
+      ],
     },
   ]);
 
@@ -3820,14 +3747,14 @@ const sareah = computed(() => {
     skills,
     abilityScores,
     abilityMods,
-    featDescriptions,
-    specialAbilities,
     toggle,
     modifiers,
     heroPointAbilities,
     mythicAbilities,
     specialAttacks,
     hexDC,
+    feats,
+    spellDCMod,
   };
 });
 export const useSareah = defineStore("sareah", {
@@ -6850,17 +6777,7 @@ const gorthor = computed(() => {
       dieSize: 2,
       critRange: 20,
       critMult: 2,
-    },
-    {
-      name: 'Flurry of Stars',
-      weaponGroup: 'thrown',
-      attackCount: 2,
-      attackPenalty: -2,
-      iterativeMax: true,
-      dieCount: 1,
-      dieSize: 2,
-      critRange: 20,
-      critMult: 2,
+      special: '1d6 cold',
     },
     {
       name: 'Rapid TWF Flurry of Stars',
@@ -6873,6 +6790,7 @@ const gorthor = computed(() => {
       dieSize: 2,
       critRange: 20,
       critMult: 2,
+      special: '1d6 cold',
     },
   ]);
 
@@ -6913,7 +6831,7 @@ const gorthor = computed(() => {
     },
   });
 
-  const charLevel = ref(10);
+  const charLevel = ref(12);
 
   const charClasses = ref([
     {
@@ -6961,7 +6879,7 @@ const gorthor = computed(() => {
 
   const defensiveAbilities = ref("");
   const dr = ref("");
-  const resist = ref("");
+  const resist = ref("fire 10");
   const immune = ref("");
   const sr = ref(0);
   const weaknesses = ref("");
@@ -7151,7 +7069,7 @@ const gorthor = computed(() => {
         reflex: 1,
         ac: 1,
         touchAC: 1,
-        attackCount: 1,
+        // attackCount: 1,
         hasteAttackCount:1,
       },
     },
@@ -7214,25 +7132,25 @@ const gorthor = computed(() => {
     abpAbilityScores: {
       bonusType: 'enhancement',
       bonus: {
-        strength: 0,
+        strength: 2,
         dexterity: 4,
         constitution: 0,
         intelligence: 0,
-        wisdom: 0,
+        wisdom: 2,
         charisma: 4,
       },
     },
     abpResistance: {
       bonusType: 'resistance',
       bonus: {
-        saves: 2,
+        saves: 5,
       },
     },
     abpNaturalArmor: {
       bonusType: 'naturalArmorEnhancement',
       bonus: {
-        ac: 1,
-        ffAC: 1,
+        ac: 2,
+        ffAC: 2,
       },
     },
     abpDeflection: {
@@ -7254,8 +7172,8 @@ const gorthor = computed(() => {
     abpArmor: {
       bonusType: 'armorEnhancement',
       bonus: {
-        ac: 2,
-        ffAC: 2,
+        ac: 3,
+        ffAC: 3,
       },
     },
     levelUp: {
@@ -7270,6 +7188,7 @@ const gorthor = computed(() => {
       bonus: {
         strength: 2,
         dexterity: 2,
+        wisdom: 1,
       }
     }
   });
@@ -7294,11 +7213,11 @@ const gorthor = computed(() => {
   });
 
   const attackCount = computed(() => {
-    let tempattackCount = 3;
+    let tempattackCount = 1;
 
     tempattackCount += modifiers.value.attackCount ?? 0;
 
-    // tempattackCount += Math.floor((baseAtk.value - 1) / 5) ?? 0;
+    tempattackCount += Math.floor((baseAtk.value - 1) / 5) ?? 0;
 
     return tempattackCount;
   });
@@ -7386,7 +7305,7 @@ const gorthor = computed(() => {
 
   const specialAttacks = reactive([
     {
-      name: `sneak attack (+${Math.floor((level.value + 1) / 2)+1}d6 and +${Math.floor((level.value + 1) / 4)} Str Damage`,
+      name: `sneak attack (+${Math.floor((level.value + 1) / 2)+1}d6, and +${Math.floor((level.value + 1) / 4)} Str and Dex Damage, and 1d4 Con Bleed`,
     },
     {
       name: `Assassinate (DC ${ 10 + Math.floor((level.value) / 2) + abilityMods.value.charisma} Fortitude`,
@@ -7470,7 +7389,7 @@ const gorthor = computed(() => {
     {
       name: 'vanishing trick',
       type: 'Su',
-      header: 'Vanishing Trick (Su) (1 ki point)',
+      header: 'Vanishing Trick (Su) (0 ki points)',
       description: [
         'As a single action, the ninja can disappear for 1 round per level.',
         'This ability functions as invisibility. Using this ability uses up 1 ki point.',
@@ -7479,7 +7398,7 @@ const gorthor = computed(() => {
     {
       name: 'flurry of stars',
       type: 'Ex',
-      header: 'Flurry of Stars (Ex) (1 ki point)',
+      header: 'Flurry of Stars (Ex) (0 ki points)',
       description: [
         'A ninja with this ability can expend 1 ki point from her ki pool and use 3 actions to attack with many shuriken.',
         'During that attack, she can throw two additional shuriken at her highest attack bonus, but all of her shuriken attacks are made at a –2 penalty, including the two extra attacks.',
@@ -7507,10 +7426,13 @@ const gorthor = computed(() => {
 
   const activeSpecialAbilities = reactive([
     {
-      name: 'Shadow Clone (1 Ki'
+      name: 'Shadow Clone (0 Ki'
     },
     {
-      name: 'Invisible Blade (1 Ki'
+      name: 'Invisible Blade (0 Ki'
+    },
+    {
+      name: 'Assassinate (0 Ki'
     },
   ]);
 
@@ -7608,12 +7530,12 @@ const frey = computed(() => {
 
   const charMelee = ref([
     {
-      name: "Great Club",
+      name: "Frey's Returning Great Club",
       weaponGroup: "one handed",
       weapon: true,
-      damage: -12,
+      damage: -18,
       attackCount: 0,
-      dieCount: 3,
+      dieCount: 4,
       dieSize: 12,
       critRange: 20,
       critMult: 3,
@@ -7668,7 +7590,7 @@ const charGear = reactive({
   },
 });
 
-const charLevel = ref(10);
+const charLevel = ref(12);
 
 const charClasses = ref([
   {
@@ -7696,6 +7618,12 @@ const charClasses = ref([
     casting: 'spontaneous',
     castingStat: 'charisma',
     spells: {
+      '6th': {
+        slots: 1,
+        prepared: [
+          'Heroism, Greater'
+        ]
+      },
       '5th': {
         slots: 2,
         prepared: [
@@ -7755,7 +7683,7 @@ const level = computed(() =>
 
 const defensiveAbilities = ref("");
 const dr = ref("");
-const resist = ref("");
+const resist = ref();
 const immune = ref("");
 const sr = ref(0);
 const weaknesses = ref("");
@@ -7773,22 +7701,22 @@ const tactics = "";
 
 const pointBuy = reactive({
   strength: {
-    pointBuy: 16,
+    pointBuy: 19,
   },
   dexterity: {
-    pointBuy: 13,
+    pointBuy: 14,
   },
   constitution: {
-    pointBuy: 17,
+    pointBuy: 18,
   },
   intelligence: {
-    pointBuy: 11,
+    pointBuy: 6,
   },
   wisdom: {
-    pointBuy: 9,
+    pointBuy: 5,
   },
   charisma: {
-    pointBuy: 16,
+    pointBuy: 18,
   },
 });
 const feats = reactive({
@@ -7905,7 +7833,7 @@ const toggle = reactive([
     active: true,
     bonus: {
       // TODO strengthMod / 2
-      meleeWeaponDamage: Math.floor(5 / 2),
+      meleeWeaponDamage: Math.floor(10 / 2),
     },
   },
   {
@@ -7943,7 +7871,7 @@ const toggle = reactive([
     },
   },
   {
-    name: "Eldtrich Smite",
+    name: "Eldritch Smite",
     bonusType: "eldritch",
     active: false,
     duration: 2,
@@ -7951,8 +7879,10 @@ const toggle = reactive([
       // weaponAttackRolls: abilityMods.value.charisma,
       // trueWeaponDamage: abilityMods.value.charisma,
 
-      weaponAttackRolls: 3,
-      trueWeaponDamage: 3,
+      meleeDieCount: 1,
+
+      weaponAttackRolls: 6,
+      trueWeaponDamage: 6,
     },
   },
 
@@ -7965,6 +7895,18 @@ const toggle = reactive([
       attackRolls: 2,
       saves: 2,
       skills: 2,
+    },
+  },
+  {
+    name: "Greater Heroism",
+    bonusType: "morale",
+    active: false,
+    duration: 2,
+    bonus: {
+      attackRolls: 4,
+      trueWeaponDamage: 4,
+      saves: 4,
+      skills: 4,
     },
   },
 ]);
@@ -7981,23 +7923,24 @@ const charMods = reactive({
     bonus: {
       weaponAttackRolls: 4,
       TrueWeaponDamage: 4,
-      reflex: 4
+      reflex: 4,
+      will: 4,
     },
   },
   abpWeapon: {
     bonusType: 'enhancement',
     bonus: {
-      weaponAttackRolls: 2,
-      trueWeaponDamage: 2,
+      weaponAttackRolls: 3,
+      trueWeaponDamage: 3,
     },
   },
   abpAbilityScores: {
     bonusType: 'enhancement',
     bonus: {
       strength: 4,
-      dexterity: 0,
+      dexterity: 2,
       constitution: 0,
-      intelligence: 0,
+      intelligence: 2,
       wisdom: 0,
       charisma: 4,
     },
@@ -8005,14 +7948,14 @@ const charMods = reactive({
   abpResistance: {
     bonusType: 'resistance',
     bonus: {
-      saves: 3,
+      saves: 5,
     },
   },
   abpNaturalArmor: {
     bonusType: 'naturalArmorEnhancement',
     bonus: {
-      ac: 1,
-      ffAC: 1,
+      ac: 2,
+      ffAC: 2,
     },
   },
   abpDeflection: {
@@ -8034,15 +7977,14 @@ const charMods = reactive({
   abpArmor: {
     bonusType: 'armorEnhancement',
     bonus: {
-      ac: 2,
-      ffAC: 2,
+      ac: 3,
+      ffAC: 3,
     },
   },
   levelUp: {
     bonusType: 'levelUp',
     bonus: {
-      constitution: 1,
-      dexterity: 1,
+      strength: 3,
     },
   },
   orcBloodline: {
@@ -8073,11 +8015,11 @@ const sizeModifier = computed(() => {
 });
 
 const attackCount = computed(() => {
-  let tempattackCount = 3;
+  let tempattackCount = 1;
 
   tempattackCount += modifiers.value.attackCount ?? 0;
 
-  // tempattackCount += Math.floor((baseAtk.value - 1) / 5) ?? 0;
+  tempattackCount += Math.floor((baseAtk.value - 1) / 5) ?? 0;
 
   return tempattackCount;
 });
@@ -8205,7 +8147,7 @@ const activeSpecialAbilities = reactive([
     name: `Armor of Agathys (20 Cold Damage`
   },
   {
-    name: `Eldritch Smite (+3 Attack (1d12+3)`
+    name: `Eldritch Smite (+6 Attack (1d12+6)`
   },
 ]);
 
