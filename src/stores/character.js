@@ -3075,7 +3075,7 @@ const sareah = computed(() => {
       },
     },
     "Luckstone": {
-      searchText: "luckstone",
+      searchText: "",
       bonusType: "luck",
       cost: 20000,
       bonus: {
@@ -3132,6 +3132,8 @@ const sareah = computed(() => {
     mythicTier: 4,
     mythicHitDie: 3,
   })
+
+  const mythicPower = computed(() => (mythic.mythicTier * 2) + 3);
 
   const charLevel = ref(16);
 
@@ -3755,6 +3757,8 @@ const sareah = computed(() => {
     hexDC,
     feats,
     spellDCMod,
+    mythic,
+    mythicPower
   };
 });
 export const useSareah = defineStore("sareah", {

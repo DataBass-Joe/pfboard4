@@ -315,7 +315,7 @@
           <b>Reach </b><span id="reach"> {{ character.reach }} ft.; </span>
         </div>
 
-        <span v-if="character.mythicFlag">
+        <span v-if="character.mythic">
           <input type="checkbox" v-for="index in
               Array(character.mythicPower)"
                  v-bind:key="index"/>
@@ -431,81 +431,6 @@
 
       </q-expansion-item>
 
-      <q-expansion-item v-if="character.featDescriptions" id="feat descriptions"
-                        style="padding: 0"
-                        expand-separator
-                        dense
-                        default-opened
-                        header-class="bg-primary text-white"
-                        label="FEATS">
-        <q-card-section>
-          <q-expansion-item v-for="(item, index) in character.featDescriptions"
-                            :key="index"
-                            style="padding: 0; color: black; text-shadow: none;"
-                            class="parchment"
-                            expand-separator
-                            dense
-                            header-class="bg-primary text-white"
-                            :label="item.header">
-            <p v-for="(descItem, descIndex) in item.description" :key="descIndex">
-              <span v-text="descItem"/>
-              <br>
-              <br>
-            </p>
-          </q-expansion-item>
-        </q-card-section>
-      </q-expansion-item>
-
-      <q-expansion-item v-if="character.specialAbilities" id="special abilities"
-                        style="padding: 0"
-                        expand-separator
-                        dense
-                        default-opened
-                        header-class="bg-primary text-white"
-                        label="SPECIAL ABILITIES">
-        <q-card-section>
-          <q-expansion-item v-for="(item, index) in character.specialAbilities"
-                            :key="index"
-                            style="padding: 0; color: black; text-shadow: none;"
-                            class="parchment"
-                            expand-separator
-                            dense
-                            header-class="bg-primary text-white"
-                            :label="item.header">
-            <p v-for="(descItem, descIndex) in item.description" :key="descIndex">
-              <span v-text="descItem"/>
-              <br>
-              <br>
-            </p>
-          </q-expansion-item>
-        </q-card-section>
-      </q-expansion-item>
-
-      <q-expansion-item v-if="character.mythicAbilities" id="special abilities"
-                        style="padding: 0;"
-                        expand-separator
-                        default-opened
-                        dense
-                        header-class="bg-yellow-8 text-white"
-                        label="MYTHIC ABILITIES">
-        <q-card-section>
-          <q-expansion-item v-for="(item, index) in character.mythicAbilities"
-                            :key="index"
-                            style="padding: 0; color: black; text-shadow: none;"
-                            class="parchment"
-                            expand-separator
-                            dense
-                            header-class="bg-yellow-8 text-black"
-                            :label="item.header">
-            <p v-for="(descItem, descIndex) in item.description" :key="descIndex">
-              <span v-text="descItem"/>
-              <br>
-              <br>
-            </p>
-          </q-expansion-item>
-        </q-card-section>
-      </q-expansion-item>
-
       <q-expansion-item v-if="character.charGear.active" id="gear"
                         style="padding: 0"
                         expand-separator
@@ -583,6 +508,7 @@
         </q-list>
       </q-card>
     </q-dialog>
+
     <q-dialog v-model="spellDialog">
       <div class="parchment">
         <q-toolbar class="bg-primary text-white">
@@ -643,9 +569,12 @@ const props = defineProps({
   character: Object,
 });
 
+
+const tab = ref('char-sheet');
+
 const toggle = reactive(props.character.toggle ?? {});
 
-const skillToggle = ref(true);
+
 const acToggle = ref(false);
 
 const damageTaken = ref(0);
@@ -959,6 +888,7 @@ function healSpell() {
   font-size: 5vmin;
 }
 
+
 hr {
   width: 100%
 }
@@ -1138,14 +1068,15 @@ input[type="checkbox"] {
 
 
 input[type="checkbox"]:before {
-  content: "\e3ac";
+  content: "\2616";
   position: absolute;
   visibility: visible;
 }
 
 input[type="checkbox"]:checked:before {
-  content: "\e3ac";
+  content: "\2617";
   position: absolute;
+  color: rgb(255, 125, 125);
 }
 
 #willsp {
