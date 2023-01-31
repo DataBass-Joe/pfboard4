@@ -75,6 +75,11 @@ const linksList = [
     link: "/#/Sareah",
   },
   {
+    title: "Sam",
+    icon: "fa-solid fa-hat-wizard",
+    link: "/#/Sam",
+  },
+  {
     title: "Dominic",
     icon: "fa-solid fa-hat-wizard",
     link: "/#/Dominic",

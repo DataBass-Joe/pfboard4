@@ -29,6 +29,9 @@
                 , ['archetype', 'name', 'level'])
             }}
           </span>
+          <span v-if="character.mythic">
+            / {{ character.mythic.mythicPath }} {{ character.mythic.mythicTier }}
+          </span>
         </div>
 
         <div>
@@ -38,10 +41,10 @@
             {{ character.size }}
           </span>
           <span v-text="'&nbsp;'"/>
-          <span id="type">
+          <span id="type" class="text-capitalize">
            {{ character.type }}
           </span>
-          <span id="subtype">
+          <span id="subtype" class="text-capitalize">
             ({{ formatList(character.subtype) }})
           </span>
 
@@ -189,73 +192,29 @@
           <div v-for="(option, index) in character.melee" :key="index">
             <span class="text-capitalize" v-text="option.name"/>
             <span v-text="'&nbsp;'"/>
-
-            <span v-if="option.attackCount >= 0 ?? false">
-              <span
-                v-for="n in option.attackCount + character.attackCount"
-                :key="n"
-              >
-                <span
-                  v-text="formatBonus(option.attack + (option.attackPenalty ?? 0)
-                  + (Math.max(0,( n - option.attackCount - character.attackCount + 2)) * -5)
-                  )"
-                />
-                <span
-                  v-if="option.iterativeAttackCount > 0 && (n - option.attackCount - character.attackCount + 2) === 1"
-                  v-text="'/' + formatBonus(option.attack + (option.attackPenalty ?? 0)
-                  + (Math.max(0,( n - option.attackCount - character.attackCount + 2)) * -5)
-                  )"/>
-                <span
-                  v-if="n !== option.attackCount + character.attackCount"
-                >/</span
-                >
-              </span>
-            </span>
-
-            <span v-else v-text="formatBonus(option.attack)"/>
-            <span v-if="option.damage || option.dieCount">
-              <span v-text="'&nbsp;'"/>
-              <span v-text="'('"/>
-              <span v-text="option.dieCount"/>
-              <span v-text="'d'"/>
-              <span v-text="option.dieSize"/>
-              <span v-text="formatBonus(option.damage)"/>
-              <span v-if="option.special" v-text="`+${option.special}`"/>
-              <span v-if="option.critRange !== 20" v-text="`/${option.critRange}–20`"/>
-              <span v-if="option.critMult && option.critMult !== 2" v-text="`/x${option.critMult}`"/>
-              <span v-text="')'"/>
-
-              <span v-if="option.critMax"
-                    v-text="` (+${option.critMult * ((option.dieCount * option.dieSize) + option.damage)} Max Crit)`"/>
-            </span>
-            <span v-if="index !== character.ranged.length - 1">, </span>
-
-          </div>
-        </div>
-        <div v-if="character.ranged[0]" id="ranged">
-          <b>Ranged </b>
-          <div v-for="(option, index) in character.ranged" :key="index">
-            <span class="text-capitalize" v-text="option.name"/>
-            <span v-text="'&nbsp;'"/>
             <span v-if="(option.attackCount > -1 ?? false)">
               <span
-                v-for="n in option.attackCount + character.attackCount"
-                :key="n"
+                v-for="bab in character.attackCount"
+                :key="bab"
               >
-                <span
-                  v-text="formatBonus(option.attack + (option.attackPenalty ?? 0)
-                  + (Math.max(0,( n - option.attackCount - character.attackCount + 2)) * -5)
-                  )"
-                />
-                <span v-if="option.iterativeAttackCount > 0
-                && (n - option.attackCount - character.attackCount + 2) === 1"
-                      v-text="'/' + formatBonus(option.attack + (option.attackPenalty ?? 0)
-                  + (Math.max(0,( n - option.attackCount - character.attackCount + 2)) * -5)
-                  )"/>
-                <span
-                  v-if="n !== option.attackCount + character.attackCount"
-                >/</span
-                >
+                <span v-if="bab === 1 && character.attackCount > 1">
+                  <span
+                    v-for="n in (option.attackCount + 1)"
+                    :key="n"
+                  >
+                      <span v-text="formatBonus(option.attack + (option.attackPenalty ?? 0)
+                                        + (Math.max(0,( bab - character.attackCount + 2)) * -5)
+                                        ) + '/'"/>
+                  </span>
+                </span>
+                <span v-else v-text="formatBonus(option.attack + (option.attackPenalty ?? 0)
+                                                  + (Math.max(0,( bab - character.attackCount + 2)) * -5))"/>
+                  <span v-if="option.iterativeAttackCount > 0 && bab > 1" v-text="
+                    '/' +
+                    formatBonus(option.attack + (option.attackPenalty ?? 0)
+                      + (Math.max(0,( bab - character.attackCount + 2)) * -5)
+                      )"/>
+                <span v-if="bab !== character.attackCount && bab !== 1">/</span>
               </span>
             </span>
 
@@ -267,6 +226,56 @@
               <span v-text="'d'"/>
               <span v-text="option.dieSize"/>
               <span v-text="formatBonus(option.damage)"/>
+              <span v-if="option.special" v-text="`+${option.special}`"/>
+              <span v-if="option.critRange !== 20" v-text="`/${option.critRange}–20`"/>
+              <span v-if="option.critMult && option.critMult !== 2" v-text="`/x${option.critMult}`"/>
+              <span v-text="')'"/>
+              <span v-if="option.critMax"
+                    v-text="` (+${option.critMult * ((option.dieCount * option.dieSize) + option.damage)} Max Crit)`"/>
+            </span>
+            <span v-if="index !== character.melee.length - 1">, </span>
+          </div>
+        </div>
+        <div v-if="character.ranged[0]" id="ranged">
+          <b>Ranged </b>
+          <div v-for="(option, index) in character.ranged" :key="index">
+            <span class="text-capitalize" v-text="option.name"/>
+            <span v-text="'&nbsp;'"/>
+            <span v-if="(option.attackCount > -1 ?? false)">
+              <span
+                v-for="bab in character.attackCount"
+                :key="bab"
+              >
+                <span v-if="bab === 1 && character.attackCount > 1">
+                  <span
+                    v-for="n in (option.attackCount + 1)"
+                    :key="n"
+                  >
+                      <span v-text="formatBonus(option.attack + (option.attackPenalty ?? 0)
+                                        + (Math.max(0,( bab - character.attackCount + 2)) * -5)
+                                        ) + '/'"/>
+                  </span>
+                </span>
+                <span v-else v-text="formatBonus(option.attack + (option.attackPenalty ?? 0)
+                                                  + (Math.max(0,( bab - character.attackCount + 2)) * -5))"/>
+                  <span v-if="option.iterativeAttackCount > 0 && bab > 1" v-text="
+                    '/' +
+                    formatBonus(option.attack + (option.attackPenalty ?? 0)
+                      + (Math.max(0,( bab - character.attackCount + 2)) * -5)
+                      )"/>
+                <span v-if="bab !== character.attackCount && bab !== 1">/</span>
+              </span>
+            </span>
+
+            <span v-else v-text="formatBonus(option.attack)"/>
+            <span v-if="option.dieCount">
+              <span v-text="'&nbsp;'"/>
+              <span v-text="'('"/>
+              <span v-text="option.dieCount"/>
+              <span v-text="'d'"/>
+              <span v-text="option.dieSize"/>
+              <span v-text="formatBonus(option.damage)"/>
+              <span v-if="option.special" v-text="`+${option.special}`"/>
               <span v-if="option.critRange !== 20" v-text="`/${option.critRange}–20`"/>
               <span v-if="option.critMult && option.critMult !== 2" v-text="`/x${option.critMult}`"/>
               <span v-text="')'"/>
@@ -280,33 +289,69 @@
         <div v-if="character.specialAttacks" id="specialAttacks" class="text-capitalize">
           <b>Special Attacks </b>
           <div v-for="(attack, index) in character.specialAttacks" :key="index"
-               class="special-attacks">
+               class="special-attacks capitalize">
 
-            <span v-if="attack.name.toLowerCase().includes('witch hexes') || attack.name.toLowerCase().includes('mythic')"
-                  class="witch-hexes">
+
+            <span
+              v-if="attack.name.toLowerCase().includes('witch hexes') || attack.name.toLowerCase().includes('mythic')"
+              class="witch-hexes">
                           {{ attack.name }}
-          <span v-for="(value, hIndex) in attack.hexes" :key="hIndex"
-                class="">
-            <span class="feat" v-text="value" @click="abilityRef = value;"/>
-            <span v-if="hIndex !== attack.hexes.length - 1">, </span>
-          </span>
+              <span v-for="(value, hIndex) in attack.hexes" :key="hIndex"
+                    class="">
+                <span class="feat" v-text="value.name ?? value" @click="abilityRef = value.searchText ?? value;"/>
+                <span v-if="hIndex !== attack.hexes.length - 1">, </span>
+              </span>
             </span>
-                          <span v-if="attack.name.toLowerCase().includes('conduit surge')"
-                                class="conduit-surge">
-
-            <span class="feat" v-text="attack.name" @click="abilityRef = 'conduit surge';"/>
-
-
-
+            <span v-else-if="attack.name.toLowerCase().includes('conduit surge')"
+                  class="conduit-surge">
+             <span class="feat" v-text="attack.name" @click="abilityRef = 'conduit surge';"/>
             </span>
+            <span v-else>
+                          {{ formatSpecial(attack) }}
+            </span>
+            <span v-if="index !== character.specialAttacks.length - 1"><br></span>
+
           </div>
         </div>
         <div v-if="character.activeSpecialAbilities" id="activeSpecialAbilities" class="text-capitalize">
-          <b>Special Attacks </b>
+          <b>Active Special Attacks </b>
           <div v-for="(attack, index) in character.activeSpecialAbilities" :key="index"
                class="special-attacks capitalize">
-            {{ formatSpecial(attack) }}
+            <span class="feat" v-text="attack.name" @click="abilityRef = attack.searchText ?? attack.name;"/>
+
+
             <span v-if="index !== character.activeSpecialAbilities.length - 1">, </span>
+            <span v-if="attack.id in trackedResource">
+          <span type="checkbox" v-for="(value, index) in
+              trackedResource[attack.id]"
+                v-bind:key="index"
+                @click="updateTrackedResource(attack.id, index)"
+                :class="{ 'mythic' : attack.searchText === 'Mythic Power'}"
+          >
+                <input type="checkbox" v-model="trackedResource[attack.id][index]"/>
+                </span>
+        </span>
+          </div>
+        </div>
+        <div v-if="character.activeGear" id="activeGear" class="text-capitalize">
+          <br>
+          <b>Active Gear </b>
+          <div v-for="(attack, index) in character.activeGear" :key="index"
+               class="special-attacks capitalize">
+            <span class="feat" v-text="attack.name" @click="charGearRef = attack.searchText ?? attack.name;"/>
+
+
+            <span v-if="index !== character.activeGear.length - 1">, </span>
+            <span v-if="attack.id in trackedResource">
+          <span type="checkbox" v-for="(value, index) in
+              trackedResource[attack.id]"
+                v-bind:key="index"
+                @click="updateTrackedResource(attack.id, index)"
+                :class="{ 'mythic' : attack.searchText === 'Mythic Power'}"
+          >
+                <input type="checkbox" v-model="trackedResource[attack.id][index]"/>
+                </span>
+        </span>
           </div>
         </div>
 
@@ -315,19 +360,15 @@
           <b>Reach </b><span id="reach"> {{ character.reach }} ft.; </span>
         </div>
 
-        <span v-if="character.mythic">
-          <input type="checkbox" v-for="index in
-              Array(character.mythicPower)"
-                 v-bind:key="index"/>
-        </span>
-
-        <div id="spells" v-if="showSpells" class="text-capitalize">
-          <div v-for="(caster, index)
+        <div v-for="(caster, index)
           in (character.charClasses)"
-               :key="index">
+             :key="index">
+          <div id="spells" v-if="showSpells && (caster.castingStat ?? false)" class="text-capitalize">
+
             <SpellList v-bind:caster="caster"
                        v-bind:castingMod="character.abilityMods[caster.castingStat]"
                        v-bind:spellDCMod="character.spellDCMod ?? 0"
+                       v-bind:charID="character.id"
                        @spell-submit="loadSpell"/>
           </div>
 
@@ -375,9 +416,9 @@
         </div>
         <div id="feats" class="text-capitalize">
           <b>Feats: </b>
-          <span v-for="(name, value, index) in character.feats" :key="index"
+          <span v-for="(value, name, index) in character.feats" :key="index"
                 class="">
-            <span class="feat" v-text="value" @click="featRef = value;"/>
+            <span class="feat" v-text="name" @click="featRef = value.searchText ?? name;"/>
             <span v-if="index !== Object.keys(character.feats).length - 1">, </span>
           </span>
 
@@ -413,6 +454,7 @@
                         <tr v-for="(value, key, index) in character.skills.totalSkills" :key="index">
                           <td class="text-left">{{ key }}</td>
                           <td v-if="typeof(value) !== 'object'" class="text-left">{{ formatBonus((value)) }}</td>
+                          <td v-else-if="allAreEqual(value)" class="text-left">{{ formatBonus((value.arcana)) }}</td>
                           <td v-else>
                           <span>
                             <tr v-for="(kValue, kKey, kIndex) in character.skills.totalSkills.knowledge" :key="kIndex">
@@ -542,10 +584,12 @@
     <q-dialog v-model="charGearDialog">
       <div class="parchment">
         <q-toolbar class="bg-primary text-white">
-          <q-toolbar-title class="text-capitalize">{{ charGearRef }}</q-toolbar-title>
+          <q-toolbar-title class="text-capitalize">{{ charGearName }}</q-toolbar-title>
           <q-btn flat round dense icon="close" v-close-popup/>
         </q-toolbar>
-        <CharGear :charGear="charGearRef"/>
+        <CharGear :charGear="charGearRef"
+                  @item-submit="changeCharGearName"/>
+        />
       </div>
     </q-dialog>
 
@@ -695,8 +739,13 @@ function formatArray(myArray) {
 const abilityRef = ref(null);
 const featRef = ref(null);
 const charGearRef = ref(null);
+const charGearName = ref(null);
 
 const spellRef = ref(null);
+
+function changeCharGearName(value) {
+  charGearName.value = value;
+}
 
 function loadSpell(value) {
   api.get(`/spell?name=ilike.${value}`)
@@ -707,12 +756,12 @@ function loadSpell(value) {
       $q.notify({
         color: 'negative',
         position: 'top',
-        message: 'Loading failed',
+        message: 'Spell Loading failed',
         icon: 'report_problem',
       });
     });
 
-  if (spellRef.value.name === null || spellRef.value.name === undefined) {
+  if ((spellRef.value === null ?? true) || spellRef.value.name === undefined) {
     spellRef.value = null;
   }
 }
@@ -863,6 +912,131 @@ function getRandomInt(min, max) {
 function healSpell() {
   damageTaken.value = Math.max(0, damageTaken.value - props.character.charLevel * 10);
 }
+
+const trackedResource = ref({});
+
+function loadTrackedResources(resource) {
+  api.get(`/character_resource?character_id=eq.${props.character.id}&resource_id=eq.${resource.id}`)
+    .then((response) => {
+
+      if (response.data[0] ?? false) {
+        trackedResource.value[resource.id] = response.data[0].resource;
+      }
+
+
+      if (Object.keys(trackedResource.value[resource.id]) === 0 ?? true) {
+
+        api.post(`/character_resource`, {
+          "character_id": props.character.id,
+          "resource_id": resource.id,
+          "resource": Array(resource.size).fill(false)
+        })
+          .then((response) => {
+            console.log(response);
+          })
+          .catch(() => {
+            $q.notify({
+              color: 'negative',
+              position: 'top',
+              message: 'failed to create resource',
+              icon: 'report_problem',
+            });
+          });
+      }
+
+    })
+    .catch(() => {
+
+      api.post(`/character_resource`, {
+        "character_id": props.character.id,
+        "resource_id": resource.id,
+        "resource": Array(resource.size).fill(false)
+      })
+        .then((response) => {
+          console.log(response);
+        })
+        .catch(() => {
+          $q.notify({
+            color: 'negative',
+            position: 'top',
+            message: 'failed to create resource',
+            icon: 'report_problem',
+          });
+        });
+
+
+      $q.notify({
+        color: 'negative',
+        position: 'top',
+        message: 'failed to find resource',
+        icon: 'report_problem',
+      });
+    });
+
+
+}
+
+if (props.character.activeSpecialAbilities ?? false) {
+  props.character.activeSpecialAbilities.forEach((ability) => {
+    if (ability.id ?? false) {
+      loadTrackedResources(ability)
+    }
+  })
+}
+
+if (props.character.activeGear ?? false) {
+  props.character.activeGear.forEach((ability) => {
+    if (ability.id ?? false) {
+      loadTrackedResources(ability)
+    }
+  })
+}
+
+const upsertConfig = reactive({
+  headers: {
+    Prefer: "resolution=merge-duplicates",
+  }
+})
+
+function updateTrackedResource(resource_id, index) {
+
+  console.log(trackedResource.value[resource_id])
+
+
+  trackedResource.value[resource_id][index] = !trackedResource.value[resource_id][index]
+  console.log(trackedResource.value[resource_id])
+
+  api.post(`/character_resource?on_conflict=character_id,resource_id`, {
+    "character_id": props.character.id,
+    "resource_id": resource_id,
+    "resource": trackedResource.value[resource_id]
+  }, upsertConfig)
+    .then((response) => {
+      console.log(response);
+      console.log(trackedResource.value[resource_id])
+
+    })
+    .catch(() => {
+      $q.notify({
+        color: 'negative',
+        position: 'top',
+        message: 'update Loading failed',
+        icon: 'report_problem',
+      });
+    });
+}
+
+function getKeyByValue(object, value) {
+  return Object.keys(object).find(key => object[key] === value);
+}
+
+function getObjectByName(object, value) {
+  let result = object.find(obj => {
+    return obj.name === value
+  });
+  return result
+}
+
 
 </script>
 
@@ -1058,7 +1232,7 @@ input:checked + .slider:before {
 
 input[type="checkbox"] {
   /*font: inherit;*/
-  color: rgb(255, 253, 125);
+  color: rgb(125, 151, 255);
   width: 1.15em;
   height: 1.15em;
   font-size: 2em;
@@ -1074,6 +1248,29 @@ input[type="checkbox"]:before {
 }
 
 input[type="checkbox"]:checked:before {
+  content: "\2617";
+  position: absolute;
+}
+
+
+.mythic input[type="checkbox"] {
+  /*font: inherit;*/
+  color: rgb(255, 253, 125);
+  width: 1.15em;
+  height: 1.15em;
+  font-size: 2em;
+  visibility: hidden;
+  cursor: pointer;
+}
+
+
+.mythic input[type="checkbox"]:before {
+  content: "\2616";
+  position: absolute;
+  visibility: visible;
+}
+
+.mythic input[type="checkbox"]:checked:before {
   content: "\2617";
   position: absolute;
   color: rgb(255, 125, 125);

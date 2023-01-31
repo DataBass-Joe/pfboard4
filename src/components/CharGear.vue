@@ -94,6 +94,7 @@
 <script setup>
 
 import {
+  defineEmits,
   defineProps, ref,
 } from 'vue';
 import {api} from "boot/axios";
@@ -124,7 +125,7 @@ const props = defineProps({
 
 
 function getItem(value) {
-  return api.get(`/item?limit=1&name=ilike.${value}`)
+  return api.get(`/item?limit=1&name=ilike.*${value}*`)
     .then((response) => response.data)
     .catch(() => {
       $q.notify({
@@ -136,11 +137,14 @@ function getItem(value) {
     });
 }
 
+const emit = defineEmits(['itemSubmit']);
 
 getItem(props.charGear)
   .then((response) => {
     pfItem.value = response[0];
+    emit('itemSubmit', pfItem.value.name)
   });
+
 
 
 </script>

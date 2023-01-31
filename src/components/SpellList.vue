@@ -11,34 +11,31 @@
                         header-class="bg-primary text-white"
                         style="padding: 0">
 
-        <div v-for="(spellList, level) in caster.spells" v-bind:key="level"
+        <div v-for="(spellList, level, index) in caster.spells" v-bind:key="index"
              class="spells">
-          <span v-if="(spellList.slots + Math.floor((castingMod - spellLevel[level]) / 4 + 1)) > 0
-&& caster.name !== 'warlock'">
-            <input type="checkbox" v-for="index in
-            Array(spellList.slots + Math.floor((castingMod - spellLevel[level]) / 4 + 1))"
-                 v-bind:key="index"/>
-          </span>
-          <span v-else-if="spellList.slots > 0">
-                        <input type="checkbox" v-for="index in
-            Array(spellList.slots)"
-                               v-bind:key="index"/>
-                          <span v-text="` (DC ${10 + castingMod + spellLevel[level] + spellDCMod})`"/>
-              <span v-text="` (+${castingMod + spellLevel[level]})`"/>
-          </span>
+          <span v-if="spellLevel[level] in trackedResource">
+          <span type="checkbox" v-for="(value, index) in
+              trackedResource[spellLevel[level]]"
+                v-bind:key="index"
+                @click="updateTrackedResource(spellLevel[level], index)"
+          >
+                <input type="checkbox" v-model="trackedResource[spellLevel[level]][index]" />
+                </span>
+        </span>
 
           <div v-show="toggleKey">
 
             <b>
               {{ level }}
-              <span v-if="caster.name !== 'warlock'">
+              <span v-if="caster.name !== 'warlock' || index === 0">
 
-              <span v-if="level !== 'Cantrips' && level !== 'Orisons'">
+              <span v-if="level !== 'Cantrips' && level !== 'Orisons' && caster.name !== 'warlock'">
               ({{ spellList.slots + Math.floor((castingMod - spellLevel[level]) / 4 + 1) }}/day)
             </span>
+
               <span v-text="` (DC ${10 + castingMod + spellLevel[level] + spellDCMod})`"/>
               <span v-text="` (+${castingMod + spellLevel[level]})`"/>
-            </span>
+                            </span>
 
 
             </b>
@@ -47,7 +44,8 @@
             <span v-text="'&nbsp;'"/>
             <i v-for="(spell, index) in spellList.prepared" v-bind:key="index">
           <span class="spell"
-                v-bind:class="{ active: spell === activeSpell }"
+                :class="{mythic: 'mythicSpells' in caster ? caster.mythicSpells.includes(spell.toLowerCase()) ?? false : false
+                , active: spell === activeSpell}"
                 v-on:click="emit('spellSubmit', spell);
                 activeSpell = spell; ">{{ spell }}</span>
 
@@ -136,6 +134,7 @@ const props = defineProps({
   caster: Object,
   castingMod: Number,
   spellDCMod: Number,
+  charID: Number
 });
 
 const emit = defineEmits(['spellSubmit']);
@@ -167,7 +166,7 @@ function spellColor(value) {
       $q.notify({
         color: 'negative',
         position: 'top',
-        message: 'Loading failed',
+        message: 'spellcolor Loading failed',
         icon: 'report_problem',
       });
     });
@@ -186,28 +185,102 @@ spellColor()
 
 
 function spellSlotModifier(slots, level) {
-  return slots + Math.floor(((props.castingMod - spellLevel[level]) / 4) + 1)
+  if (props.caster.name !== 'warlock') {
+    return slots + Math.floor(((props.castingMod - spellLevel[level]) / 4) + 1)
+  }
+  return slots
 }
 
 
-const x = computed(() => {
 
-  const myObjKeys = ref(Object.keys(props.caster.spells));
+const trackedResource = ref({});
 
 
-  let test = reactive({})
 
-  myObjKeys.value.forEach((spelllist) => {
-    test[spelllist] = props.caster.spells[spelllist].slots
+function loadTrackedResources(resource, spellSlots) {
+  api.get(`/spell_slot?character_id=eq.${props.charID}&resource_id=eq.${resource}`)
+    .then((response) => {
+
+      if(response.data[0] ?? false) {
+        trackedResource.value[resource] = response.data[0].resource;
+      }
+
+      if ((!trackedResource.value[resource] ?? true)) {
+
+        api.post(`/spell_slot`, {
+          "character_id": props.charID,
+          "resource_id": resource,
+          "resource": Array(spellSlots).fill(false)
+        })
+          .then((response) => {
+            console.log(response);
+          })
+          .catch(() => {
+            $q.notify({
+              color: 'negative',
+              position: 'top',
+              message: 'resource creation failed',
+              icon: 'report_problem',
+            });
+          });
+      }
+
+    })
+    .catch(() => {
+      $q.notify({
+        color: 'negative',
+        position: 'top',
+        message: 'spell_list resource Loading failed',
+        icon: 'report_problem',
+      });
+    });
+}
+
+Object.keys(props.caster.spells).forEach((level) => {
+  const spellSlots = computed(() => spellSlotModifier(props.caster.spells[level].slots, level))
+  if (spellSlots.value > 0) {
+    loadTrackedResources(spellLevel[level], spellSlots.value)
+  }
   })
 
-  return test
 
-});
+const upsertConfig = reactive({
+  headers: {
+    Prefer: "resolution=merge-duplicates",
+  }
+})
+
+function updateTrackedResource(resource_id, index) {
+
+  console.log(trackedResource.value[resource_id])
+
+  trackedResource.value[resource_id][index] = !trackedResource.value[resource_id][index]
+  console.log(trackedResource.value[resource_id])
+
+  api.post(`/spell_slot?on_conflict=character_id,resource_id`, {
+    "character_id": props.charID,
+    "resource_id": resource_id,
+    "resource": trackedResource.value[resource_id]
+  }, upsertConfig)
+    .then((response) => {
+      console.log(response);
+      console.log(trackedResource.value[resource_id])
+
+    })
+    .catch(() => {
+      $q.notify({
+        color: 'negative',
+        position: 'top',
+        message: 'Loading failed',
+        icon: 'report_problem',
+      });
+    });
+}
+
 
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 
 .spells {
   text-indent: 1rem;
@@ -216,6 +289,10 @@ const x = computed(() => {
 
 .patron {
   color: #31CCEC;
+}
+
+.mythic {
+  color: $amber;
 }
 
 .spell {
@@ -232,9 +309,11 @@ const x = computed(() => {
   font-weight: bold;
 }
 
+
+
 input[type="checkbox"] {
   /*font: inherit;*/
-  color: rgb(125, 125, 255);
+  color: rgb(175, 175, 255);
   width: 1.15em;
   height: 1.15em;
   font-size: 2em;
@@ -253,6 +332,8 @@ input[type="checkbox"]:before {
 input[type="checkbox"]:checked:before {
   content: "\272E";
   position: absolute;
+  color: rgb(125, 125, 255);
+
 }
 
 </style>

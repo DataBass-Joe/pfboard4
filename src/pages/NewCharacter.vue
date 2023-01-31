@@ -78,7 +78,7 @@
                 <q-slider
                   :name="pointBuy[index]"
                   v-model="pointBuy[name]"
-                  :min="7"
+                  :min="unlimitedFlag ? 1 : 7"
                   :max="sliderMax[name]"
                   :step="1"
                   :class="`${name.substring(0, 3)}-slider`"
@@ -96,6 +96,7 @@
               />
               <q-item v-else>{{ heritageBonus[name] }}</q-item>
             </q-item>
+
 
             <q-item>
               <q-item-section>
@@ -269,6 +270,8 @@ const abilityScoreNames = [
   "charisma",
 ];
 const pointBuyTable = {
+  1: -23,
+  2: -19,
   3: -15,
   4: -12,
   5: -9,
@@ -285,8 +288,29 @@ const pointBuyTable = {
   16: 10,
   17: 13,
   18: 17,
+  19: 21,
+  20: 25,
 };
 const reversePointBuyTable = {
+  "-23": 1,
+  "-22": 1,
+  "-21": 1,
+  "-20": 1,
+  "-19": 2,
+  "-18": 2,
+  "-17": 2,
+  "-16": 2,
+  "-15": 3,
+  "-14": 3,
+  "-13": 3,
+  "-12": 4,
+  "-11": 4,
+  "-10": 4,
+  "-9": 5,
+  "-8": 5,
+  "-7": 5,
+  "-6": 6,
+  "-5": 6,
   "-4": 7,
   "-3": 7,
   "-2": 8,
@@ -309,6 +333,14 @@ const reversePointBuyTable = {
   15: 17,
   16: 17,
   17: 18,
+  18: 18,
+  19: 18,
+  20: 18,
+  21: 18,
+  22: 18,
+  23: 18,
+  24: 18,
+  25: 18,
 };
 
 const pointBuyOptions = reactive({
@@ -316,9 +348,15 @@ const pointBuyOptions = reactive({
   "Standard Low: 15": 15,
   "Standard High: 20": 20,
   "Epic: 25": 25,
+  "Unlimited": 150,
+
 });
 
 const pointBuyChoice = ref("Standard High: 20");
+
+const unlimitedFlag = computed(() => pointBuyChoice.value === "Unlimited")
+
+
 const pointBuy = reactive({
   strength: 10,
   dexterity: 10,
@@ -413,7 +451,7 @@ const sliderMax = computed(() => {
         pointBuyOptions[pointBuyChoice.value] -
           pointsSpent.value +
           Number(pointBuyTable[pointBuy[ability]])
-      ] ?? 18;
+      ] ?? (unlimitedFlag.value ? 20 : 18);
   });
   return holder;
 });
@@ -480,13 +518,20 @@ function pushData() {
 
 }
 
+const sliderMin = computed(() => unlimitedFlag.value ? 1 : 7);
+
+
+const cssRatio = computed(() => unlimitedFlag.value ? 0.19 : 0.11);
+
+
 const cssVars = computed(() => ({
-  "--str-width": `${Math.max(0, (sliderMax.value.strength - 7) / 0.11)}%`,
-  "--dex-width": `${Math.max(0, (sliderMax.value.dexterity - 7) / 0.11)}%`,
-  "--con-width": `${Math.max(0, (sliderMax.value.constitution - 7) / 0.11)}%`,
-  "--int-width": `${Math.max(0, (sliderMax.value.intelligence - 7) / 0.11)}%`,
-  "--wis-width": `${Math.max(0, (sliderMax.value.wisdom - 7) / 0.11)}%`,
-  "--cha-width": `${Math.max(0, (sliderMax.value.charisma - 7) / 0.11)}%`,
+
+  "--str-width": `${Math.max(0, (sliderMax.value.strength - sliderMin.value) / cssRatio.value)}%`,
+  "--dex-width": `${Math.max(0, (sliderMax.value.dexterity - sliderMin.value) / cssRatio.value)}%`,
+  "--con-width": `${Math.max(0, (sliderMax.value.constitution - sliderMin.value) / cssRatio.value)}%`,
+  "--int-width": `${Math.max(0, (sliderMax.value.intelligence - sliderMin.value) / cssRatio.value)}%`,
+  "--wis-width": `${Math.max(0, (sliderMax.value.wisdom - sliderMin.value) / cssRatio.value)}%`,
+  "--cha-width": `${Math.max(0, (sliderMax.value.charisma - sliderMin.value) / cssRatio.value)}%`,
 }));
 
 function formatBonus(bonus) {

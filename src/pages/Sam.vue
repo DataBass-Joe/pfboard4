@@ -1,23 +1,23 @@
 <template>
   <span>
       <BaseSheet6
-        :character="frey"
+        :character="sam"
       />
   </span>
 </template>
 
 <script setup>
 import BaseSheet6 from '/src/components/BaseSheet6.vue';
-import {useFrey} from "stores/character";
+import {useSam} from "stores/character";
 import { useMeta } from "quasar";
 import {reactive, ref} from "vue";
 
-const store = useFrey();
+const store = useSam();
 
-const frey = store.frey;
+const sam = store.sam;
 
 const metaData = reactive({
-  title: frey.name,
+  title: sam.name,
 });
 useMeta(metaData);
 
