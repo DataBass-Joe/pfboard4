@@ -1,6 +1,6 @@
 # Quasar App (quasar-project)
 
-A Quasar Project
+This is old, but was used for 2 different campaigns by 3 people other than me, so I'll take the victory.
 
 ## Install the dependencies
 
